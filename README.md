@@ -1,6 +1,6 @@
 # Name of Project
 
-StudioGhiblisMovieMaker
+### __Studio Ghibli's Movie Maker__
 
 # Table of Contents
 Preamble
