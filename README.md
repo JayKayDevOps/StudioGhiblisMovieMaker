@@ -49,6 +49,7 @@ Jason Kelly
 
 # Project Deadline
 Refer to BB for deadlines
+21st March
 
 # Project Specification
 Clean and simple design
@@ -62,10 +63,12 @@ Database persistence technology
 Define the business requirements
 Named queries and database triggers for security
 Regex for cleansing and validation of data before sending it to the database.
+"Check with Pauric if Mongo DB is a requirement"
+
 
 # Useful Links
  - Project Slack: https://atudevops.slack.com
- - GitHub: <<staff member's GitHub repo for the student project>>
+ - GitHub: <<staff member's GitHub repo for the student project>> https://github.com/JayKayDevOps/StudioGhiblisMovieMaker
 
 # More Information
 For more information, visit our other sections
@@ -82,6 +85,8 @@ SLAs	Service level agreements
 Risk Management	How we manage risk
 Security	Overview of security
 Project Log	Team log for the project
+"SAST or DAST"
+
 
 # Risk Register
 These are the current Risks on the project, re-aligned on a weekly basis
@@ -107,8 +112,15 @@ The code framework to be used will be <<>>, we will be programming using the IDE
 # Github version control:
     branches used
     version/release management
+    "Feature branches and enable GH branch protection on branches"
+    "2 reviewers on PR's"
+    "PR's required"
 
 # Agile project management methods/principles (jira)
+  JIRA has been setup https://atu-team-1.atlassian.net/jira/software/projects/SCRUM/boards/1
+  https://atu-team-1.atlassian.net/wiki/spaces/SCRUM/overview?homepageId=66045
+  
+
 
 # Social Contract
     Mobile phones be left on silent during sprint sessions and class time.
@@ -175,6 +187,16 @@ Our branching strategy will start with <gh>, then the issue number, followed by 
 The team's team's velocity is calculated by <<Team decides>>.
 
 The team's current story point velocity is "N/A".
+"How many stories done in a Sprint"
 
 # Definition of Ready
 <<List criteria that are common here>>
+Acceptance Criteria
+
+# Automated Documentation
+ ?? GitHub Actions and GitHub Wiki
+
+# Perfomance Management Tool
+ ?? 
+
+
