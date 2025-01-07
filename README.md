@@ -38,6 +38,13 @@ Rotating scrum master so that everyone gets to experience the role once.
 
 # Rockstars
 <<list team member names here>>
+Linda Jennings
+Anna Gavin
+Shivangi Shalini James
+Mark Hempenstall
+Robert Szlufik
+Darragh Kitt
+Jason Kelly
 
 
 # Project Deadline
