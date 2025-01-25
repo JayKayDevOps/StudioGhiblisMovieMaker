@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/[Reusable]-Branch_naming_check_main.yml
   
   sonarqube:
-    uses: ./.github/workflows/[Reusable]-SonarQube_Scan.yml
+    uses: ./.github/workflows/[Reusable]-SonarQube_scan.yml
 
   unit-tests:
     uses: ./.github/workflows/[Reusable]-Unit-tests.yml
