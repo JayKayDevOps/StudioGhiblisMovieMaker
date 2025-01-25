@@ -1,0 +1,17 @@
+25/01/2025 - Some branch protection tasks are outstanding due to not having permissions to edit the repository settings:
+
+1) In Settings > Branches, add new Branch Protection Rules (one each for dev and main):
+
+in both rules:
+- Require pull request
+  - 2 approvers
+  - Require review from Code Owners
+- Require conversation resolution before merging
+- Block force pushes
+
+2) Add the other project members to the CODEOWNERS file
+
+3) Enable Dependabot scanning of Github actions (optional) - this monitors the actions workflows for stale or dangerous actions dependencies (e.g. marketplace actions)
+
+4) Create SonarQube Cloud free acccount (up to 5 users) and create project there and hook up the Github action to use this 
+
