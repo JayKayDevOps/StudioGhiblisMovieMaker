@@ -9,6 +9,9 @@ jobs:
   check-for-secrets:
     uses: /.github/workflows/[Reusable]-Check-for-secrets.yml@main
   
+  branch-naming:
+    uses: /.github/workflows/[Reusable]-Branch_naming_check_main.yml@main
+  
   sonarqube:
     uses: /.github/workflows/[Reusable]-SonarQube_Scan.yml@main
 
