@@ -1,0 +1,16 @@
+name: Run Checks on PR to main branch
+
+on:
+  pull_request:
+    branches:
+      main
+
+jobs:
+  check-for-secrets:
+    uses: /.github/workflows/[Reusable]-Check-for-secrets.yml@main
+  
+  sonarqube:
+    uses: /.github/workflows/[Reusable]-SonarQube_Scan.yml@main
+
+  unit-tests:
+    uses: /.github/workflows/[Reusable]-Unit-tests.yml@main
