@@ -1,13 +1,8 @@
 name: SonarQube Scan
 
 on: 
-  workflow_call:
-    inputs: 
-      project-path:
-        description: Path to the project for scanning
-        required: true
-        type: string
-
+  workflow_call
+    
 env:
   SONAR_URL: <url to access sonarqube goes here>
         
