@@ -7,15 +7,15 @@ on:
 
 jobs:
   check-for-secrets:
-    uses: /.github/workflows/[Reusable]-Check-for-secrets.yml@main
+    uses: ./[Reusable]-Check-for-secrets.yml@main
 
   branch-naming:
-    uses: /.github/workflows/[Reusable]-Branch_naming_check_dev.yml@main
+    uses: ./[Reusable]-Branch_naming_check_dev.yml@main
     
   sonarqube:
-    uses: /.github/workflows/[Reusable]-SonarQube_scan.yml@main
+    uses: ./[Reusable]-SonarQube_scan.yml@main
 
   unit-tests:
-    uses: /.github/workflows/[Reusable]-Unit-tests.yml@main
+    uses: ./[Reusable]-Unit-tests.yml@main
      
        
