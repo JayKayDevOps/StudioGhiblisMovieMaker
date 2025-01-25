@@ -1,0 +1,55 @@
+name: Build & Deploy to Staging
+
+on: 
+  pull_request:
+      types: 
+        - closed
+      branches:
+         - dev
+
+env:
+  ARTIFACT_NAME: StudioGhibliMM
+  ARTIFACT_PATH: build-artifact
+#  put pipeline variables here
+
+jobs:
+  build:
+    if: github.event.pull_request.merged == true 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout_repository
+        uses: actions/checkout@v4
+        with:
+           fetch-depth: 2
+       
+       # put any setup steps here
+       
+       # put any build steps here
+       
+      - name: Archive_artifact
+        uses: actions/upload-artifact@v4.3.3
+        with:
+          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
+          path: ${{ env.ARTIFACT_PATH }}
+          if-no-files-found: error
+          retention-days: 10
+          overwrite: true
+  
+  deploy_to_staging:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download_artifact
+        uses: actions/download-artifact@v4.1.7
+        with:
+          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
+          path: ${{ github.workspace }}/artifact/
+    
+       # put any deploy steps here
+    
+
+    
+    
+
+
+      
