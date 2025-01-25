@@ -1,0 +1,18 @@
+name: Branch Naming Check - Dev
+
+on:
+  workflow_call:
+        
+jobs:
+  branch-name-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: check-branch-names
+        run: |
+          if [[ ${GITHUB_HEAD_REF} = "dev"]]; then
+            echo "Branch naming OK"
+          else
+            echo "Branch naming does not comply with policy - please only merge to main from the dev branch"
+            exit 1
+          fi
+        shell: bash 
