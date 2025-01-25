@@ -16,6 +16,7 @@ jobs:
   build:
     if: github.event.pull_request.merged == true # Prevents pipeline from running if PR is abandoned etc.
     runs-on: ubuntu-latest
+    environment: Prod
     steps:
       - name: Checkout_repository
         uses: actions/checkout@v4
