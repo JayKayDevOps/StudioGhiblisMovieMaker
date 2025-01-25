@@ -1,0 +1,21 @@
+name: Run Checks on PR to dev branch
+
+on:
+  pull_request:
+    branches:
+      dev
+
+jobs:
+  check-for-secrets:
+    uses: /.github/workflows/[Reusable]-Check-for-secrets.yml@main
+
+  branch-naming:
+    uses: /.github/workflows/[Reusable]-Branch_naming_check_dev.yml@main
+    
+  sonarqube:
+    uses: /.github/workflows/[Reusable]-SonarQube_scan.yml@main
+
+  unit-tests:
+    uses: /.github/workflows/[Reusable]-Unit-tests.yml@main
+     
+       

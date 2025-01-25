@@ -1,0 +1,16 @@
+name: Run Unit Tests
+
+on:
+  workflow_dispatch
+
+jobs:
+  Unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4.2.2
+
+      - name: perform-unit-tests
+        run: |
+          # script to run unit tests goes here
+    
