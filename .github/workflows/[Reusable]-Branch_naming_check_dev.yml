@@ -9,7 +9,7 @@ jobs:
     steps:
       - name: check-branch-names
         run: |
-          dev_regex="^(feature-|Feature-) 
+          dev_regex="^(feature-|Feature-)" 
           if [ ${GITHUB_HEAD_REF} =~ dev-regex ]; then
             echo "Branch naming OK"
           else
