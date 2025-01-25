@@ -1,0 +1,28 @@
+name: SonarQube Scan
+
+on: 
+  workflow_call:
+    inputs: 
+      project-path:
+        description: Path to the project for scanning
+        required: true
+        type: string
+
+env:
+  SONAR_URL: <url to access sonarqube goes here>
+        
+jobs:
+  sonarqube-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout-repository
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+      - name: perform-sonarqube-scan
+        uses: SonarSource/sonarqube-scan-action@v4.2.1
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # Token will need to be retrieved from SonarQube Cloud when the account + project are created there, and added to the secrets for this repo
+          SONAR_HOST_URL: ${{ env.SONAR_URL }}
+          
+       
