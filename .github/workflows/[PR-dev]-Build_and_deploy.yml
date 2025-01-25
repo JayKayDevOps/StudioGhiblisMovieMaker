@@ -8,7 +8,7 @@ on:
          - dev
 
 env:
-  ARTIFACT_NAME: StudioGhibliMM
+  ARTIFACT_NAME: StudioGhibliMM-dev
   ARTIFACT_PATH: build-artifact
 #  put pipeline variables here
 
