@@ -1,0 +1,35 @@
+Branch Protection and Pipeline Strategy
+
+Branching Strategy:
+
+- Development done on short-lived feature branches following 'feature-<Jira ticket ID>-<Description>' naming pattern
+- Merges to 'dev' branch for debugging and testing (deploys to 'Staging' environment)
+- After testing, code is merged to 'main' for deployment to 'Prod' environment
+- 'doc' branch for creating documentation without requiring PR/Review
+
+Environments: 
+
+- Staging and Production - need to be configured in GitHub repository
+
+Branch Protection:
+
+- PR required (both dev and main)
+- 2 Reviewers required per PR
+- Conversations must be resolved - merging can't happen unless teammates' comments on a PR are marked as resolved 
+- CODEOWNERS file* to ensure appropriately skilled team members review by file type/folder
+- Require GitHub actions checks to pass:
+	1. Hardcoded secrets checks (both dev and main)
+	2. SonarQube (main only**)
+	3. Unit Tests (main only**)
+	4. Branch naming convention (both dev and main)
+	5. Generate SBOMs, documentation etc. (main only***)
+	
+* A CODEOWNERS file allows the team to specify particular reviewers by file type, folder etc.  The Codeowner's review counts as one of the two required reviews.  This is useful as it allows us to ensure that the most experienced person on the team in a particular area reviews any changes 
+	
+** Checks will run regardless of 'required' status - for dev we do not want to block the developers from merging expiremental code as they may need to test in the staging environment. Non-breaking changes are useful in that they provide the contributor with feedback without blocking the merge.
+
+*** It may be possible to generate drafts in a "preview" location on the dev branch - TBD 
+
+CI/CD:
+
+- Build and deploy actions to be decided on once development starts properly
