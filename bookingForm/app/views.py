@@ -2,7 +2,6 @@ from werkzeug.utils import redirect
 from app import app, db
 from app.models import MovieMakerBookingDB
 from flask import json, render_template, request, session, url_for, jsonify, flash
-#from fpdf import FPDF
 import os
 
 
@@ -21,6 +20,7 @@ def add_customer():
         course=form['course'],
 
     )
+    #Need to add comment to DB
     #comment = form['comment']
 
     db.session.add(customer)
