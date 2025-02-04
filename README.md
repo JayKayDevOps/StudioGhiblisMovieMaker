@@ -30,20 +30,21 @@ Each team should fill in the blanks <<>> and add additional content that the tea
 Our product will be delivered using an Agile methodology that embraces the DevOps culture. Please note that our culture embraces change and these documents are treated as living, breathing artefacts that will be continuously updated.
 
 # Scrum Master
-<<list week number, student name>>
+- **Sprint 1 (27/1/25 - 9/2/25)** Linda Jennings
+- **Sprint 2 (10/2/25 - )** TBC
+- **Sprint 3 (TBC)** TBC  
 Rotating scrum master so that everyone gets to experience the role once.
 
 # Product Owner
 <<List name>> (Permanent)
 
 # Rockstars
-<<list team member names here>>
-Linda Jennings
-Anna Gavin
-Shivangi Shalini James
-Mark Hempenstall
-Robert Szlufik
-Darragh Kitt
+Linda Jennings,
+Anna Gavin,
+Shivangi Shalini James,
+Mark Hempenstall,
+Robert Szlufik,
+Darragh Kitt,
 Jason Kelly
 
 
@@ -69,6 +70,8 @@ Regex for cleansing and validation of data before sending it to the database.
 # Useful Links
  - Project Slack: https://atudevops.slack.com
  - GitHub: <<staff member's GitHub repo for the student project>> https://github.com/JayKayDevOps/StudioGhiblisMovieMaker
+ - Jira scrum board: https://atu-team-1.atlassian.net/jira/software/projects/SCRUM/boards/1?sprintStarted=true
+ - Team Confluence: https://atu-team-1.atlassian.net/wiki/spaces/SCRUM/overview?homepageId=66045
 
 # More Information
 For more information, visit our other sections
