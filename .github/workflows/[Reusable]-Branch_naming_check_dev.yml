@@ -11,7 +11,7 @@ jobs:
         run: |
           branch_name=${GITHUB_HEAD_REF}
           echo branch_name
-          dev_regex = "^(feature-|Feature-|docs)"
+          dev_regex="^(feature-|Feature-|docs)"
           if [[ "$branch_name =~ $dev_regex ]]; then
             echo "Branch naming OK"
           else
