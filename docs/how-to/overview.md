@@ -15,3 +15,6 @@ In a how-to guide, you can assume some knowledge and understanding. You can assu
 | [Auto Docs](Markdown_HowToGuide.md)                  | Markdown files  |
 | [Auto Docs](Auto_doc_config.md)                  | Auto Docs Config               |
 | [AWS Architecture](AWS-Cloudformation.md) | YAML Template 1 for AWS Architecture (ECS Cluster with Fargate, RDS MySQL with Subnets, and IAM Role) |   
+| [AWS Architecture](Task_def_HTG.md) | YAML Template 2 for AWS Architecture (Task Definition) |   
+
+
