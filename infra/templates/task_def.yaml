@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECS Task Definition and Service'
+
+Parameters:
+  VPCID:
+    Description: 'VPC ID'
+    Type: 'String'
+  PublicSubnetId:
+    Description: 'Public Subnet ID'
+    Type: 'String'
+  PrivateSubnet1Id:
+    Description: 'Private Subnet 1 ID'
+    Type: 'String'
+  PrivateSubnet2Id:
+    Description: 'Private Subnet 2 ID'
+    Type: 'String'
+  ECSClusterName:
+    Description: 'ECS Cluster Name'
+    Type: 'String'
+  ECRRepositoryURI:
+    Description: 'ECR Repository URI'
+    Type: 'String'
+  TaskExecutionRoleArn:
+    Description: 'Task Execution Role ARN'
+    Type: 'String'
+  RDSInstanceEndpoint:
+    Description: 'RDS Instance Endpoint'
+    Type: 'String'
+  DBPassword:
+    Description: 'The database admin account password'
+    Type: 'String'
+    NoEcho: true
+
+Resources:
+  MyLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: '/ecs/my-service'
+      RetentionInDays: 30
+
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow access to ECS tasks'
+      VpcId: !Ref VPCID
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+        - IpProtocol: 'tcp'
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: '0.0.0.0/0'
+
+  MyTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: 'my-task-family'
+      NetworkMode: 'awsvpc'
+      RequiresCompatibilities:
+        - 'FARGATE'
+      Cpu: '1024'
+      Memory: '2048'
+      ExecutionRoleArn: !Ref TaskExecutionRoleArn
+      ContainerDefinitions:
+        - Name: 'my-container'
+          Image: !Ref ECRRepositoryURI
+          PortMappings:
+            - ContainerPort: 80
+              Protocol: 'tcp'
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              awslogs-group: '/ecs/my-service'
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: 'ecs'
+          Environment:
+            - Name: 'DB_HOST'
+              Value: !Ref RDSInstanceEndpoint
+            - Name: 'DB_PORT'
+              Value: '3306'
+            - Name: 'DB_USER'
+              Value: 'admin'
+            - Name: 'DB_PASS'
+              Value: !Ref DBPassword
+            - Name: 'DB_NAME'
+              Value: 'mydatabase'
+
+  MyService:
+    Type: 'AWS::ECS::Service'
+    DependsOn: MyTaskDefinition
+    Properties:
+      Cluster: !Ref ECSClusterName
+      TaskDefinition: !Ref MyTaskDefinition
+      DesiredCount: 2
+      LaunchType: 'FARGATE'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !Ref PublicSubnetId
+          SecurityGroups:
+            - !Ref MySecurityGroup
+          AssignPublicIp: 'ENABLED'
+
