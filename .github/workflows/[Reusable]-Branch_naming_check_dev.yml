@@ -10,10 +10,7 @@ jobs:
       - name: check-branch-names
         run: |
           branch_name=${GITHUB_HEAD_REF}
-          echo "$branch_name"
-          dev_regex="^(feature-|Feature-|docs)"
-          echo $dev_regex
-          echo "$dev_regex"
+          dev_regex="^(feature-|Feature-|docs)(-[\w-]+)?$"
           if ["$branch_name" =~ "$dev_regex"]; then
             echo "Branch naming OK"
           else
