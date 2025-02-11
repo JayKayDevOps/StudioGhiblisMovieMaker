@@ -26,16 +26,19 @@ An ECS Task Definition is a blueprint for your application, specifying various p
 ### MyLogGroup
 A CloudWatch Logs log group for ECS service logs.
 
+```yaml
 MyLogGroup:
   Type: 'AWS::Logs::LogGroup'
   Properties:
     LogGroupName: '/ecs/my-service'
     RetentionInDays: 30
+```
 
 ### Task Definition
 
 The `MyTaskDefinition` resource defines the properties of the ECS task.
 
+```yaml
 MyTaskDefinition:
   Type: 'AWS::ECS::TaskDefinition'
   Properties:
@@ -69,24 +72,25 @@ MyTaskDefinition:
             Value: !Ref DBPassword
           - Name: 'DB_NAME'
             Value: 'mydatabase'
+```
 
 ### Properties Breakdown
 
-Type: 'AWS::ECS::TaskDefinition': Specifies that this resource is an ECS Task Definition.
+* Type: 'AWS::ECS::TaskDefinition': Specifies that this resource is an ECS Task Definition.
 
-Family: A name for the task family, used to group related task definitions.
+* Family: A name for the task family, used to group related task definitions.
 
-NetworkMode: 'awsvpc': Specifies the network mode as awsvpc, which is required for Fargate tasks.
+* NetworkMode: 'awsvpc': Specifies the network mode as awsvpc, which is required for Fargate tasks.
 
-RequiresCompatibilities: Indicates that the task requires the Fargate launch type.
+* RequiresCompatibilities: Indicates that the task requires the Fargate launch type.
 
-Cpu: Allocates 1024 CPU units to the task (equivalent to 1 vCPU).
+* Cpu: Allocates 1024 CPU units to the task (equivalent to 1 vCPU).
 
-Memory: Allocates 2048 MiB (2 GiB) of memory to the task.
+* Memory: Allocates 2048 MiB (2 GiB) of memory to the task.
 
-ExecutionRoleArn: The ARN of the task execution role that grants permissions for AWS API calls.
+* ExecutionRoleArn: The ARN of the task execution role that grants permissions for AWS API calls.
 
-ContainerDefinitions: Defines the configuration for the container(s) within the task.
+* ContainerDefinitions: Defines the configuration for the container(s) within the task.
 
 # How to Define an ECS Service in AWS CloudFormation
 
@@ -116,3 +120,4 @@ MyService:
         SecurityGroups:
           - !Ref MySecurityGroup
         AssignPublicIp: 'ENABLED'
+```
