@@ -10,9 +10,9 @@ jobs:
       - name: check-branch-names
         run: |
           branch_name=${GITHUB_HEAD_REF}
-          echo branch_name
+          echo "$branch_name"
           dev_regex="^(feature-|Feature-|docs)"
-          if [[ "$branch_name =~ $dev_regex ]]; then
+          if ["$branch_name =~ $dev_regex]; then
             echo "Branch naming OK"
           else
             echo "Branch naming does not comply with policy - please prefix feature branch names with 'feature-' or 'docs-'"
