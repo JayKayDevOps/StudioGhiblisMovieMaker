@@ -2,16 +2,22 @@
 
 1) In Settings > Branches, add new Branch Protection Rules (one each for dev and main):
 
-in both rules:
-- Require pull request
-  - 2 approvers
-  - Require review from Code Owners
+- Require pull request:
+    - 2 approvers
+    - Require review from Code Owners
 - Require conversation resolution before merging
 - Block force pushes
-
+- Require status checks to pass:
+    - branch naming: both (use the applicable workflow - dev or main)
+    - hard-coded secrets: main only
+    - sonarqube scan: main only
+    - unit tests: main only
+    
 2) Add the other project members to the CODEOWNERS file
 
-3) Enable Dependabot scanning of Github actions (optional) - this monitors the actions workflows for stale or dangerous actions dependencies (e.g. marketplace actions)
+3) Enable Dependabot scanning of Github actions (optional) - this monitors the actions workflows for stale or dangerous actions dependencies (e.g. marketplace actions) Security > Enable Dependabot Alerts
 
-4) Create SonarQube Cloud free acccount (up to 5 users) and create project there and hook up the Github action to use this 
+4) Create SonarQube Cloud free acccount (up to 5 users) and create project there and hook up the Github action to use this
+
+5) Create 'Staging' and 'Prod' environments in Settings > Environment, and assign approvers (should be everyone)
 
