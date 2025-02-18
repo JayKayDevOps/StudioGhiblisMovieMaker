@@ -13,7 +13,7 @@ class User(db.Model, UserMixin):
     second_name = db.Column(db.String(255), nullable=False)
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    role = db.Column(db.Enum('customer', 'admin'), default='customer')
+    role = db.Column(db.Enum('customer', 'admin',name = 'user_role'), default='customer')
 
     def set_password(self, password):
         """Hashes password before storing it."""
@@ -50,7 +50,7 @@ class CourseModule(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
     
     course = db.relationship('Course', backref=db.backref('modules', lazy=True))
-
+''
 
 class Subscription(db.Model):
     """Stores course subscriptions by customers."""
@@ -60,8 +60,8 @@ class Subscription(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'))
     special_requests = db.Column(db.Text, nullable=True)
-    status = db.Column(db.Enum('pending', 'confirmed', 'cancelled'), default='pending')
-    booking_date = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
+    status = db.Column(db.Enum('pending', 'confirmed', 'cancelled',name='sub_status'), default='pending')
+    subscription_date = db.Column(db.TIMESTAMP, server_default=db.func.current_timestamp())
 
     user = db.relationship('User', backref=db.backref('subscription', lazy=True))
     course = db.relationship('Course', backref=db.backref('subscription', lazy=True))

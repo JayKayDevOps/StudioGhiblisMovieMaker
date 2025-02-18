@@ -18,3 +18,4 @@ app.config.from_object('config')
 # Load the views
 from app import app
 from app import models
+

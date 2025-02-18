@@ -1,4 +1,4 @@
-from src.app import db, app
+from app import db, app
 
 # Initialize DB inside the Flask app context
 with app.app_context():
