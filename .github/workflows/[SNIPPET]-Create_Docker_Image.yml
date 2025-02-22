@@ -1,0 +1,21 @@
+# Snippet with steps to create a docker image 
+
+# Add the varaibles into the 'env' block, and register the secrets with the GitHub repo
+# Then insert the below into "steps" block:
+
+- name: Log_in_to_Docker_registry
+  run: echo "${{ secrets.GIT_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GIT_USERNAME }} --password-stdin
+
+- name: Build_Docker_image
+  run: |
+    VERSION=${{ github.run_number }}-dev
+    docker build --build-arg GIT_USERNAME=${{ secrets.GIT_USERNAME }} \
+                 --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} \
+                 --build-arg CERTIFICATE=${{ secrets.CERTIFICATE }} \
+                 -t ghcr.io/${{ env.APP_NAME }}/${{ env.IMAGE_NAME }}:$VERSION
+
+- name: Push_Docker_image
+  run: docker push ghcr.io/${{ env.APP_NAME }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-dev
+
+- name: Log_out_of_Docker_registry
+  run: docker logout ghcr.io
