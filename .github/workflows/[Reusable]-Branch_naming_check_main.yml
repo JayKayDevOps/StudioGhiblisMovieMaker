@@ -1,4 +1,4 @@
-name: Branch Naming Check - Dev
+name: Branch Naming Check - Main
 
 on:
   workflow_call:
