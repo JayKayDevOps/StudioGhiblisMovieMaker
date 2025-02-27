@@ -23,30 +23,14 @@ jobs:
         with:
            fetch-depth: 2
        
-       # put any setup steps here
+       # build - cloudformation yaml (main.yaml?)
+
+       # docker build  
+       # docker push 
        
-       # put any build steps here
-       
-      - name: Archive_artifact
-        uses: actions/upload-artifact@v4.3.3
-        with:
-          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
-          path: ${{ env.ARTIFACT_PATH }}
-          if-no-files-found: error
-          retention-days: 10
-          overwrite: true
-  
-  deploy_to_staging:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download_artifact
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
-          path: ${{ github.workspace }}/artifact/
-    
-       # put any deploy steps here
+       # task_def.yaml
+      
+   
     
 
     
