@@ -1,0 +1,43 @@
+# docker-compose.yml for Flask App with PostgreSQL (Development)
+
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: flask-app-container
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_RUN_HOST=0.0.0.0
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=moviemaking_db
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+
+  db:
+    image: postgres:latest
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=moviemaking_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
+
+# docker-compose run -e FLASK_ENV=development --rm web flask run --host=0.0.0.0
+
+# docker-compose up --build
