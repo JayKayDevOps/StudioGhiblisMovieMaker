@@ -10,6 +10,11 @@ on:
 env:
   ARTIFACT_NAME: StudioGhibliMM-dev
   ARTIFACT_PATH: build-artifact
+  AWS_REGION:
+  AWS_CF_NAME_MAIN: 
+  AWS_CF_TEMPLATE_MAIN:
+  AWS_CF_NAME_TASK_DEF:
+  AWS_CF_TEMPLATE_TASK_DEF:
 #  put pipeline variables here
 
 jobs:
@@ -22,14 +27,36 @@ jobs:
         uses: actions/checkout@v4
         with:
            fetch-depth: 2
-       
-       # build - cloudformation yaml (main.yaml?)
+        
+      # https://github.com/aws-actions/configure-aws-credentials
+      - name: SetUp_AWS_Credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          # etc.
+      ### !!! We need to discuss the best approach here - there are a few options to authenticate with AWS and we need to settle on the 
+      ###     best one for this project
+      
+      # build - cloudformation yaml (main.yaml?)
+      # https://github.com/marketplace/actions/aws-cloudformation-deploy-cloudformation-stack-action-for-github-actions
+      - name: CloudFormation_main
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
+        with: 
+          name: ${{ env.AWS_CF_NAME_MAIN }}
+          template: ${{ env.AWS_CF_TEMPLATE_MAIN }}
+          # etc.
+      
 
        # docker build  
        # docker push 
        
-       # task_def.yaml
-      
+      # task_def.yaml
+      - name: CloudFormation_task_def
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
+        with: 
+          name: ${{ env.AWS_CF_NAME_TASK_DEF }}
+          template: ${{ env.AWS_CF_TEMPLATE_TASK_DEF }}
+          # etc.
    
     
 
