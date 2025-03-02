@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .AdvancedSearch {
+            width: 393px;
+            height: 852px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+
+        .Frame2 {
+            width: 209px;
+            height: 66px;
+            position: relative;
+        }
+
+        .Film {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .StudioGhibliSMovieMaker {
+            position: absolute;
+            left: 58px;
+            top: 3px;
+            font-size: 20px;
+            font-family: 'Kokoro', sans-serif;
+            font-weight: 400;
+            color: black;
+        }
+
+        .Line3 {
+            width: 100%;
+            border-top: 1px solid black;
+            margin: 10px 0;
+        }
+
+        .Group14 {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .TextLink {
+            color: #1E1E1E;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .SearchCoursesIMLookingFor {
+            font-family: 'Kokoro', sans-serif;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+            margin-top: 20px;
+        }
+
+            .SearchCoursesIMLookingFor span {
+                display: block;
+                font-size: 12px;
+            }
+
+        .Group2 {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .InputGroup {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+            .InputGroup label {
+                font-size: 16px;
+                font-family: 'Kokoro', sans-serif;
+                color: black;
+            }
+
+        .InputBox {
+            width: 199px;
+            height: 23px;
+            border-radius: 8px;
+            border: 1px solid black;
+            background-color: white;
+        }
+
+        .Button {
+            width: 97px;
+            height: 30px;
+            padding: 12px;
+            background: #2C2C2C;
+            border-radius: 8px;
+            color: #F5F5F5;
+            text-align: center;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="AdvancedSearch">
+        <div class="Frame2">
+            <div class="Film">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
+        </div>
+
+        <div class="Line3"></div>
+
+        <div class="Group14">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11.875 7.5H3.125M3.125 7.5L7.5 11.875M3.125 7.5L7.5 3.125" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <div class="TextLink">Home</div>
+        </div>
+
+        <div class="SearchCoursesIMLookingFor">
+            <span style="font-size:20px;font-weight:bold; padding:10px">Search courses</span>
+            <span>I’m looking for..</span>
+        </div>
+
+        <div class="Group2">
+            <div class="InputGroup">
+                <label for="date">Date</label>
+                <input type="text" id="date" class="InputBox">
+            </div>
+            <div class="InputGroup">
+                <label for="time">Time</label>
+                <input type="text" id="time" class="InputBox">
+            </div>
+            <div class="InputGroup">
+                <label for="delivery">Delivery</label>
+                <input type="text" id="delivery" class="InputBox">
+            </div>
+            <div class="InputGroup">
+                <label for="keywords">Key words</label>
+                <input type="text" id="keywords" class="InputBox">
+            </div>
+        </div>
+
+        <button class="Button">Search</button>
+    </div>
+</body>
+</html>
