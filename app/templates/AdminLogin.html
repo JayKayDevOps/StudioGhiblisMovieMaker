@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .AdminLogIn {
+            width: 393px;
+            height: 852px;
+            position: relative;
+            background: white;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .Frame1 {
+            width: 209px;
+            height: 66px;
+            position: absolute;
+            top: 25px;
+            left: 7px;
+        }
+
+        .Film {
+            position: absolute;
+            left: 0;
+            top: 0;
+        }
+
+        .StudioGhibliSMovieMaker {
+            position: absolute;
+            left: 58px;
+            top: 3px;
+            font-size: 20px;
+            font-weight: 400;
+            color: black;
+        }
+        .FormHeader{
+            position: absolute;
+            top: 200px;
+            left: 31px;
+            padding: 24px;
+        }
+
+        .FormLogIn {
+            position: absolute;
+            top: 273px;
+            left: 31px;
+            padding: 24px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .InputField {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .Input {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            background: white;
+        }
+
+        .Button {
+            padding: 12px;
+            background: #2C2C2C;
+            color: #F5F5F5;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .TextLink {
+            text-decoration: underline;
+            cursor: pointer;
+            color: #1E1E1E;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="AdminLogIn">
+        <div class="Frame1">
+            <div class="Film">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.95204 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.95204 44 4 42.048 4 39.64V8.36C4 5.95204 5.95204 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
+        </div>
+
+        <div class="FormHeader">
+            <p style="font-size:20px;font-weight:bold; color:black">Admin login</p>
+        </div>
+
+        <div class="FormLogIn">
+            <div class="InputField">
+                <label>Email</label>
+                <input type="email" class="Input" placeholder="Enter your email">
+            </div>
+            <div class="InputField">
+                <label>Password</label>
+                <input type="password" class="Input" placeholder="Enter your password">
+            </div>
+            <button class="Button">Sign In</button>
+            <a class="TextLink">Forgot password?</a>
+        </div>
+    </div>
+
+</body>
+</html>
