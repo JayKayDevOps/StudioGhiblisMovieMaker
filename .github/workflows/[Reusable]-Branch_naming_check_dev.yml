@@ -4,7 +4,7 @@ on:
   workflow_call:
         
 jobs:
-  branch-name-validation:
+  branch-name-validation-dev:
     runs-on: ubuntu-latest
     steps:
       - name: check-branch-names
