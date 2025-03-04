@@ -3,7 +3,7 @@ name: Run Checks on PR to main branch
 on:
   pull_request:
     branches:
-      main
+      'main'
 
 jobs:
   check-for-secrets:
