@@ -3,13 +3,13 @@ name: Run Checks on PR to dev branch
 on:
   pull_request:
     branches:
-      dev
+      'dev'
 
 jobs:
   check-for-secrets:
     uses: ./.github/workflows/[Reusable]-Check-for-secrets.yml
 
-  branch-naming:
+  branch-naming-dev:
     uses: ./.github/workflows/[Reusable]-Branch_naming_check_dev.yml
     
   sonarqube:
