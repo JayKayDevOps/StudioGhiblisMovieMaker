@@ -52,8 +52,8 @@ jobs:
           template: ${{ env.AWS_CF_TEMPLATE_MAIN }}
           # etc.
       
-
-   ### docker build & push - modify for AWS rather than GHIO
+   ### Change the following steps to use AWS rather than GH:
+      # docker build & push 
       - name: Log_in_to_Docker_registry
         run: echo "${{ secrets.GIT_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GIT_USERNAME }} --password-stdin
 
