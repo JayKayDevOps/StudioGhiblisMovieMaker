@@ -5,48 +5,74 @@ on:
       types: 
         - closed
       branches:
-         - main
+         - 'main'
 
 env:
-  ARTIFACT_NAME: StudioGhibliMM
+  ARTIFACT_NAME: StudioGhibliMM-dev
   ARTIFACT_PATH: build-artifact
+  AWS_REGION:
+  AWS_CF_NAME_MAIN: 
+  AWS_CF_TEMPLATE_MAIN:
+  AWS_CF_NAME_TASK_DEF:
+  AWS_CF_TEMPLATE_TASK_DEF:
 #  put pipeline variables here
 
 jobs:
   build:
     if: github.event.pull_request.merged == true # Prevents pipeline from running if PR is abandoned etc.
     runs-on: ubuntu-latest
-    environment: Prod
+    environment: Staging
     steps:
       - name: Checkout_repository
         uses: actions/checkout@v4
         with:
            fetch-depth: 2
-       
-       # put any setup steps here
-       
-       # put any build steps here
-       
-      - name: Archive_artifact
-        uses: actions/upload-artifact@v4.3.3
+        
+      # https://github.com/aws-actions/configure-aws-credentials
+      - name: SetUp_AWS_Credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
-          path: ${{ env.ARTIFACT_PATH }}
-          if-no-files-found: error
-          retention-days: 10
-          overwrite: true
-  
-  deploy_to_prod:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download_artifact
-        uses: actions/download-artifact@v4.1.7
-        with:
-          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
-          path: ${{ github.workspace }}/artifact/
-    
-       # put any deploy steps here
+          aws-region: ${{ env.AWS_REGION }}
+          # etc.
+      ### !!! We need to discuss the best approach here - there are a few options to authenticate with AWS and we need to settle on the 
+      ###     best one for this project
+      
+      # build - cloudformation yaml (main.yaml?)
+      # https://github.com/marketplace/actions/aws-cloudformation-deploy-cloudformation-stack-action-for-github-actions
+      - name: CloudFormation_main
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
+        with: 
+          name: ${{ env.AWS_CF_NAME_MAIN }}
+          template: ${{ env.AWS_CF_TEMPLATE_MAIN }}
+          # etc.
+      
+
+      # docker build & push - modify for AWS rather than GHIO
+      - name: Log_in_to_Docker_registry
+        run: echo "${{ secrets.GIT_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GIT_USERNAME }} --password-stdin
+
+      # tweak to suit the specifics of our project:
+      - name: Build_Docker_image
+        run: |
+          VERSION=${{ github.run_number }}-dev
+          docker build --build-arg GIT_USERNAME=${{ secrets.GIT_USERNAME }} \
+                 --build-arg GIT_TOKEN=${{ secrets.GIT_TOKEN }} \
+                 --build-arg CERTIFICATE=${{ secrets.CERTIFICATE }} \
+                 -t ghcr.io/${{ env.APP_NAME }}/${{ env.DOCKER_IMAGE_NAME }}:$VERSION
+
+      - name: Push_Docker_image
+        run: docker push ghcr.io/${{ env.APP_NAME }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-dev
+
+      - name: Log_out_of_Docker_registry
+        run: docker logout ghcr.io
+       
+      # task_def.yaml
+      - name: CloudFormation_task_def
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
+        with: 
+          name: ${{ env.AWS_CF_NAME_TASK_DEF }}
+          template: ${{ env.AWS_CF_TEMPLATE_TASK_DEF }}
+          # etc.
     
 
     
