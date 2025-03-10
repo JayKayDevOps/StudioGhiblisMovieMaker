@@ -15,11 +15,12 @@ env:
   AWS_CF_TEMPLATE_MAIN:
   AWS_CF_NAME_TASK_DEF:
   AWS_CF_TEMPLATE_TASK_DEF:
-#  put pipeline variables here
+  AWS_CF_TEMPLATE_TASK_DEF_JSON:
+#  put pipeline variables here, including AWS secrets
+
 
 jobs:
-  build:
-    if: github.event.pull_request.merged == true # Prevents pipeline from running if PR is abandoned etc.
+ build:
     runs-on: ubuntu-latest
     environment: Staging
     steps:
@@ -27,7 +28,12 @@ jobs:
         uses: actions/checkout@v4
         with:
            fetch-depth: 2
-        
+
+      # are there parameters needed here?
+      - name: Install_Python
+        run: |
+          npm install python 
+          
       # https://github.com/aws-actions/configure-aws-credentials
       - name: SetUp_AWS_Credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
@@ -47,7 +53,7 @@ jobs:
           # etc.
       
 
-      # docker build & push - modify for AWS rather than GHIO
+   ### docker build & push - modify for AWS rather than GHIO
       - name: Log_in_to_Docker_registry
         run: echo "${{ secrets.GIT_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GIT_USERNAME }} --password-stdin
 
@@ -63,15 +69,20 @@ jobs:
       - name: Push_Docker_image
         run: docker push ghcr.io/${{ env.APP_NAME }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}-dev
 
+### Using AWS instead:
       - name: Log_out_of_Docker_registry
         run: docker logout ghcr.io
+
+      - name: convert_yaml_to_json
+        run: |
+          ### python script goes here
        
       # task_def.yaml
       - name: CloudFormation_task_def
         uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
         with: 
           name: ${{ env.AWS_CF_NAME_TASK_DEF }}
-          template: ${{ env.AWS_CF_TEMPLATE_TASK_DEF }}
+          template: ${{ env.AWS_CF_TEMPLATE_TASK_DEF_JSON }}
           # etc.
    
     
