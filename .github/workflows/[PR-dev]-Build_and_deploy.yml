@@ -31,8 +31,9 @@ jobs:
 
       # are there parameters needed here?
       - name: Install_Python
-        run: |
-          npm install python 
+        run: | 
+          sudo apt update
+          sudo apt install python3
           
       # https://github.com/aws-actions/configure-aws-credentials
       - name: SetUp_AWS_Credentials
@@ -75,7 +76,7 @@ jobs:
 
       - name: convert_yaml_to_json
         run: |
-          ### python script goes here
+          python -c "import yaml, json, sys; print(json.dumps(yaml.safe_load(open('Task_def.yml'))))" > Task_def.json
        
       # task_def.yaml
       - name: CloudFormation_task_def
