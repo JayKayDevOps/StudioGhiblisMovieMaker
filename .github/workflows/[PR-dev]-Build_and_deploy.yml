@@ -29,7 +29,7 @@ jobs:
         with:
            fetch-depth: 2
 
-      # are there parameters needed here?
+     
       - name: Install_Python
         run: | 
           sudo apt update
@@ -73,6 +73,11 @@ jobs:
 ### Using AWS instead:
       - name: Log_out_of_Docker_registry
         run: docker logout ghcr.io
+      
+      - name: Install_Python
+        run: | 
+          sudo apt update
+          sudo apt install python3
 
       - name: convert_yaml_to_json
         run: |
