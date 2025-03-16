@@ -5,7 +5,7 @@ on:
     types: 
       - closed
     branches:
-      - dev
+      - 'dev'
 
 env:
   ARTIFACT_NAME: StudioGhibliMM-dev
@@ -105,6 +105,15 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Install_Python
+        run: | 
+          sudo apt update
+          sudo apt install python3
+
+      - name: convert_yaml_to_json
+        run: |
+          python -c "import yaml, json, sys; print(json.dumps(yaml.safe_load(open('Task_def.yml'))))" > Task_def.json
+      
       # Deploy Task Definition
       - name: Deploy Task Definition
         run: |
