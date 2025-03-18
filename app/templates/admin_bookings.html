@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Bookings</title>
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"> -->
+</head>
+<body>
+    <h1>Admin - Course Bookings</h1>
+    
+    {% if bookings %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Booking ID</th>
+                    <th>User Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>Status</th>
+                    <th>Subscription Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                    <tr>
+                        <td>{{ booking.booking_id }}</td>
+                        <td>{{ booking.user_name }}</td>
+                        <td>{{ booking.user_email }}</td>
+                        <td>{{ booking.course_name }}</td>
+                        <td>{{ booking.status }}</td>
+                        <td>{{ booking.subscription_date }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No bookings found.</p>
+    {% endif %}
+
+</body>
+</html>
