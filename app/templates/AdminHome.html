@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Homepage</title>
+    <script src="https://kit.fontawesome.com/6ef668882c.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .admin-homepage {
+            width: 393px;
+            height: 852px;
+            background: white;
+            position: relative;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-family: 'Kokoro', sans-serif;
+            font-size: 20px;
+            font-weight: 400;
+            color: black;
+        }
+
+        .logout-button {
+            background: #2C2C2C;
+            color: #F5F5F5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid #2C2C2C;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .welcome-text {
+            font-size: 20px;
+            font-weight: 400;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .grid-item {
+            width: 122px;
+            height: 122px;
+            background: #D9D9D9;
+            border-radius: 10px;
+            border: 1px solid black;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: black;
+            margin: 10px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="admin-homepage">
+
+        <div class="header">
+            <div class="Film">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
+            <button class="logout-button">Logout</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="welcome-text">Welcome admin!</div>
+
+        <div>
+            <table style="padding:20px">
+                <tr>
+                    <th class="grid-item"><div><span><i class="fas fa-users"></i></span><p>Profile & Users</p></div></th>
+                    <th class="grid-item"><div><span><i class="fas fa-video"></i></span><p>Course List</p></div></th>
+                </tr>
+                <tr>
+                    <th class="grid-item"><div><span><i class="far fa-plus-square"></i></span><p>Create New</p></div></th>
+                    <th class="grid-item"><div><span><i class="far fa-dollar-sign"></i></span><p>Accounts</p></div></th>
+                </tr>
+                <tr>
+                    <th class="grid-item"><div><span><i class="fas fa-archive"></i></span><p>Course History</p></div></th>
+                </tr>
+                
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>
