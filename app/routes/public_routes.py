@@ -1,10 +1,10 @@
-from flask import Blueprint
+from flask import Blueprint, render_template
 public_bp = Blueprint('public', __name__)
 
 @public_bp.route('/', methods=['GET'])
 def home():
     print("Home Page")
-    return "<h1>Home Page</h1>"
+    return render_template("homepage.html")
 
 @public_bp.route('/courses')
 def list_courses():
