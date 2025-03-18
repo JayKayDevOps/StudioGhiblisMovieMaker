@@ -40,5 +40,5 @@ def load_user(user_id):
 
 # Run the Flask App
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000, debug=app.config.get('DEBUG', True))
-    # app.run()
+    #app.run(host="0.0.0.0", port=5000, debug=app.config.get('DEBUG', True))
+    app.run()
