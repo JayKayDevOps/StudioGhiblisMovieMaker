@@ -1,42 +1,81 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="jumbotron">
-    <div class="container-fluid">
-    <h1>Welcome to Studio Ghibli's Movie Maker</h1>
-    <p>Please select one of the links from the nav bar.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Ghibli’s Movie Maker</title>
+    <style>
+        body {
+            background: white;
+            font-family: Kokoro, sans-serif;
+        }
+
+        .container {
+            width: 393px;
+            margin: auto;
+            text-align: center;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .button {
+            background: #2C2C2C;
+            color: #F5F5F5;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #2C2C2C;
+            display: inline-block;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .card {
+            width: 313px;
+            border: 1px solid black;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            margin: 10px auto;
+        }
+
+            .card img {
+                width: 107px;
+                height: 92px;
+                border-radius: 10px;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.95204 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.95204 44 4 42.048 4 39.64V8.36C4 5.95204 5.95204 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <h1>Studio Ghibli’s Movie Maker</h1>
         </div>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-6 mx-auto">
-                <div class="card mt-5 text-center">
-                </div>
-                <form action="/add" method="post">
-                    <div class="form-group">
-                        <label for="name">Full Name:</label>
-                        <input name="name" type="text" class="form-control" id="name" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email:</label>
-                        <input name="email-address" type="email" class="form-control" id="email" required>
-                    </div>
-                    <div class="radio">
-                        <label><input type="radio" name="course" value="Course 1"> Course 1</label>
-                    </div>
-                    <div class="radio">
-                        <label><input type="radio" name="course" value="Course 2"> Course 2</label>
-                    </div>
-                    <div class="radio disabled">
-                        <label><input type="radio" name="course" value="Course 3"> Course 3</label>
-                    </div>
-                    <div class="form-group">
-                      <label for="comment">Comment:</label>
-                      <textarea name="comment" class="form-control" rows="5" id="comment"></textarea>
-                    </div>
-                    <br>
-                    <button type="submit" class="btn btn-default">Submit</button>
-                </form>
-            </div>
+        <button class="button">Admin login</button>
+        <img src="/Images/Ghibli.png" alt="Ghibli Image" width="380" height="218">
+        <p style="font-size:20px; font-weight:bold">Welcome</p><p>We love anime and Studio Ghibli. Our mission is to share our enthusiasm through movie making courses!<br><br>Search our courses below or view the full list.</p>
+        <div class="card">
+            <img src="/Images/Journey.png" alt="Studio Ghibli">
+            <span>All courses</span>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.66666 16H25.3333M25.3333 16L16 6.66669M25.3333 16L16 25.3334" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+        </div>
+        <div class="card">
+            <img src="/Images/Water.png" alt="Search">
+            <span>Search</span>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6.66666 16H25.3333M25.3333 16L16 6.66669M25.3333 16L16 25.3334" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
         </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

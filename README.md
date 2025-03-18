@@ -30,9 +30,12 @@ Each team should fill in the blanks <<>> and add additional content that the tea
 Our product will be delivered using an Agile methodology that embraces the DevOps culture. Please note that our culture embraces change and these documents are treated as living, breathing artefacts that will be continuously updated.
 
 # Scrum Master
-- **Sprint 1 (27/1/25 - 9/2/25)** Linda Jennings
-- **Sprint 2 (10/2/25 - )** TBC
-- **Sprint 3 (TBC)** TBC  
+- **Sprint 1 (27/1/25 - 9/2/25)** Linda
+- **Sprint 2 (10/2/25 - 24/2/25)** Linda
+- **Sprint 3 (24/2/25 - 9/3/25)** Robert
+- **Sprint 4 (10/3/25 - 23/3/25)** Shivangi
+- **Sprint 5 (24/3/25 - 6/4/25)** TBC
+    
 Rotating scrum master so that everyone gets to experience the role once.
 
 # Product Owner
@@ -56,7 +59,7 @@ Refer to BB for deadlines
 Clean and simple design
 User access levels (client, administrator)
 Includes at least one self-developed API and one web service
-To be run over <specify platform>
+To be run over AWS
 
 # Frameworks
 We will be using MongoDB for our database
@@ -139,11 +142,11 @@ The code framework to be used will be <<>>, we will be programming using the IDE
     Use Agile methodologies in the project at all times.
 
 # Meetings
-Stand-ups will occur Every <<day/time>> during class and <<day/time>> using an Automated bot. Two per week.
-The order in which people give their updates will be << >>.
+Stand-ups will occur Every Tuesday during class and every second Thursday using Teams. Two per week.
+The order in which people give their updates will be decided by the SM.
 Updates will be in the form: What I've done, Impediments, What I plan to do.
-Sprint planning will occur at <<date/time>> every week.
-Please add and update items within <<issue management tool>> prior to the sprint planning session.
+Sprint planning will occur at 7:30pm Monday every second week.
+Please add and update items within Jira prior to the sprint planning session.
 Sprint retro will be at the end of our sprint on <<Date/Time>> (timebox retro for 15 minutes, to be organised by the scrum master).
 Points raised in the sprint retro will be noted and posted on the Slack channel by the Scrum Master. The Scrum Master is rotated per team member every week.
 Backlog refinement will happen on <<date/time>> during our sprint.

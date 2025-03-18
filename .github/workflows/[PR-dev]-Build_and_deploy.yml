@@ -2,51 +2,140 @@ name: Build & Deploy to Staging
 
 on: 
   pull_request:
-      types: 
-        - closed
-      branches:
-         - dev
+    types: 
+      - closed
+    branches:
+      - 'dev'
 
 env:
   ARTIFACT_NAME: StudioGhibliMM-dev
   ARTIFACT_PATH: build-artifact
-#  put pipeline variables here
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_CF_NAME_MAIN: MyCloudFormationStack
+  AWS_CF_TEMPLATE_MAIN: cloudformation/templates/main.yml
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true # Prevents pipeline from running if PR is abandoned etc.
+    if: github.event.pull_request.merged == true # Prevents pipeline from running if PR is abandoned, etc.
     runs-on: ubuntu-latest
     environment: Staging
     steps:
-      - name: Checkout_repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-           fetch-depth: 2
-       
-       # put any setup steps here
-       
-       # put any build steps here
-       
-      - name: Archive_artifact
-        uses: actions/upload-artifact@v4.3.3
+          fetch-depth: 2
+
+      # https://github.com/aws-actions/configure-aws-credentials
+      - name: Set Up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
-          path: ${{ env.ARTIFACT_PATH }}
-          if-no-files-found: error
-          retention-days: 10
-          overwrite: true
-  
-  deploy_to_staging:
-    needs: build
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Check for CloudFormation Changes
+      - name: Check for CloudFormation Changes
+        run: |
+          echo "Checking for CloudFormation changes..."
+          CHANGESET=$(aws cloudformation create-change-set \
+            --stack-name ${{ env.AWS_CF_NAME_MAIN }} \
+            --template-body file://${{ env.AWS_CF_TEMPLATE_MAIN }} \
+            --change-set-name TempChangeSet \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --query "Id" --output text || echo "NO_CHANGES")
+
+          if [ "$CHANGESET" = "NO_CHANGES" ]; then
+            echo "No changes detected. Skipping deployment."
+            echo "SKIP_DEPLOY=true" >> $GITHUB_ENV
+            exit 0
+          else
+            echo "Changes detected. Proceeding with deployment."
+          fi
+
+      # Deploy CloudFormation Stack
+      - name: Deploy CloudFormation Main
+        if: ${{ env.SKIP_DEPLOY }} == 'false'
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
+        with: 
+          name: ${{ env.AWS_CF_NAME_MAIN }}
+          template: ${{ env.AWS_CF_TEMPLATE_MAIN }}
+          capabilities: CAPABILITY_NAMED_IAM
+
+  build-and-push-ecr:
+    name: Build and Push Docker Image to ECR
     runs-on: ubuntu-latest
     steps:
-      - name: Download_artifact
-        uses: actions/download-artifact@v4.1.7
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
         with:
-          name: ${{ env.ARTIFACT_NAME }}_${{ github.RUN_NUMBER }}
-          path: ${{ github.workspace }}/artifact/
-    
-       # put any deploy steps here
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install -y jq
+          pip install pyyaml
+
+      - name: Log in to Amazon ECR
+        run: |
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | \
+          docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
+      - name: Build Docker Image
+        run: |
+          docker build --platform=linux/amd64 -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest .
+
+      - name: Push Docker Image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
+
+  deploy-task:
+    name: Deploy ECS Service
+    runs-on: ubuntu-latest
+    needs: build-and-push-ecr
+    steps:
+      - name: Set Up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Install_Python
+        run: | 
+          sudo apt update
+          sudo apt install python3
+
+      - name: convert_yaml_to_json
+        run: |
+          python -c "import yaml, json, sys; print(json.dumps(yaml.safe_load(open('Task_def.yml'))))" > Task_def.json
+      
+      # Deploy Task Definition
+      - name: Deploy Task Definition
+        run: |
+          aws ecs register-task-definition \
+            --cli-input-json file://Task_def.json
+
+      # Update ECS Service
+      - name: Update ECS Service
+        if: ${{ env.SKIP_DEPLOY }} == 'false'
+        run: |
+          echo "Registering new Task Definition revision..."
+          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
+            --cli-input-json file://Task_def.json \
+            --query "taskDefinition.taskDefinitionArn" --output text)
+
+          echo "Updating ECS Service to use new Task Definition..."
+          aws ecs update-service \
+            --cluster MyClusterName \
+            --service MyServiceName \
+            --task-definition $TASK_DEFINITION_ARN \
+            --force-new-deployment
+
     
 
     

@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ECS Cluster with Fargate, RDS MySQL with Subnets, and IAM Role'
+Description: 'ECS Cluster with Fargate, RDS PostgreSQL with Subnets, and IAM Role'
 
 Parameters:
   DBPassword:
@@ -121,21 +121,21 @@ Resources:
         - !Ref PrivateSubnet2
 
   MyRDSInstance:
-    Type: 'AWS::RDS::DBInstance'
+    Type: 'AWS::RDS::DBInstance'  
     Properties:
       DBInstanceIdentifier: 'mydbinstance'
       AllocatedStorage: '20'
-      DBInstanceClass: 'db.t3.micro'  
-      Engine: 'mysql'
-      MasterUsername: 'admin'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'postgres'
+      MasterUsername: 'DB_Admin'
       MasterUserPassword: !Ref DBPassword
-      DBName: 'mydatabase'
+      DBName: 'moviemaking_dev'
       DBSubnetGroupName: !Ref MyDBSubnetGroup
       VPCSecurityGroups:
         - !Ref MyDBSecurityGroup
       Tags:
         - Key: 'Name'
-          Value: 'MyDBInstance'
+          Value: 'MyPostgresInstance'
         - Key: 'Environment'
           Value: 'DEV'
 
@@ -146,8 +146,8 @@ Resources:
       VpcId: !Ref MyVPC
       SecurityGroupIngress:
         - IpProtocol: 'tcp'
-          FromPort: '3306'
-          ToPort: '3306'
+          FromPort: 5432
+          ToPort: 5432
           CidrIp: '0.0.0.0/0'
 
   MyTaskExecutionRole:
@@ -176,26 +176,53 @@ Resources:
                   - 'ecr:CompleteLayerUpload'
                   - 'ecr:ListImages'
                   - 'ecr:GetAuthorizationToken'
+                  - 'logs:CreateLogGroup'
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
+                  - 'logs:DescribeLogStreams'
                 Resource: '*'
 
 Outputs:
-  VPCId:
-    Value: !Ref MyVPC
-  PublicSubnetId:
-    Value: !Ref PublicSubnet
   PrivateSubnet1Id:
     Value: !Ref PrivateSubnet1
   PrivateSubnet2Id:
     Value: !Ref PrivateSubnet2
-  ECSClusterName:
-    Value: !Ref MyCluster
-  ECRRepositoryURI:
-    Value: !GetAtt MyECRRepository.RepositoryUri
-  TaskExecutionRoleArn:
-    Value: !GetAtt MyTaskExecutionRole.Arn
+  MyECSClusterName:
+    Description: 'The name of the ECS Cluster'
+    Value: !Ref MyCluster  # References the ECS cluster's logical ID
+    Export:
+      Name: MyECSClusterName  # Exports it for other stacks to import
   InternetGatewayId:
     Value: !Ref InternetGateway
   PublicRouteTableId:
     Value: !Ref PublicRouteTable
+  RDSInstanceEndpoint:
+    Description: 'The endpoint of the RDS instance'
+    Value: !GetAtt MyRDSInstance.Endpoint.Address
+    Export:
+      Name: 'RDSInstanceEndpoint'
+  VPCId:
+    Description: 'The ID of the VPC'
+    Value: !Ref MyVPC
+    Export:
+      Name: MyVPCID  # This name will be used by other stacks to import the value
+  PublicSubnetId:
+    Description: 'The ID of the public subnet'
+    Value: !Ref PublicSubnet
+    Export:
+      Name: PublicSubnetId  
+  ECRRepositoryURI:
+    Description: 'The URI of the ECR Repository'
+    Value: !GetAtt MyECRRepository.RepositoryUri
+    Export:
+      Name: ECRRepositoryURI
+  TaskExecutionRoleArn:
+    Description: 'The ARN of the ECS Task Execution Role'
+    Value: !GetAtt MyTaskExecutionRole.Arn
+    Export:
+      Name: TaskExecutionRoleArn
+  MyTaskExecutionRoleOutput:
+    Description: "The ARN of the task execution role"
+    Value: !GetAtt MyTaskExecutionRole.Arn
+    Export:
+      Name: MyTaskExecutionRoleExportName

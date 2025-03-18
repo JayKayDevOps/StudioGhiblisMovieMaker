@@ -5,7 +5,7 @@ on:
       types: 
         - closed
       branches:
-         - main
+         - 'main'
 
 env:
   ARTIFACT_NAME: StudioGhibliMM

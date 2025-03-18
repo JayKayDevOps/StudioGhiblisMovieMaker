@@ -1,104 +1,78 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'ECS Task Definition and Service'
+Description: 'ECS Task Definition and Service for Flask App using Port 5000'
 
 Parameters:
-  VPCID:
-    Description: 'VPC ID'
-    Type: 'String'
-  PublicSubnetId:
-    Description: 'Public Subnet ID'
-    Type: 'String'
-  PrivateSubnet1Id:
-    Description: 'Private Subnet 1 ID'
-    Type: 'String'
-  PrivateSubnet2Id:
-    Description: 'Private Subnet 2 ID'
-    Type: 'String'
-  ECSClusterName:
-    Description: 'ECS Cluster Name'
-    Type: 'String'
-  ECRRepositoryURI:
-    Description: 'ECR Repository URI'
-    Type: 'String'
-  TaskExecutionRoleArn:
-    Description: 'Task Execution Role ARN'
-    Type: 'String'
-  RDSInstanceEndpoint:
-    Description: 'RDS Instance Endpoint'
-    Type: 'String'
   DBPassword:
-    Description: 'The database admin account password'
+    Description: 'Database password'
     Type: 'String'
     NoEcho: true
+  FlaskEnv:
+    Description: 'Flask environment (development or production)'
+    Type: 'String'
+    Default: 'development'
 
 Resources:
-  MyLogGroup:
-    Type: 'AWS::Logs::LogGroup'
-    Properties:
-      LogGroupName: '/ecs/my-service'
-      RetentionInDays: 30
-
   MySecurityGroup:
     Type: 'AWS::EC2::SecurityGroup'
     Properties:
-      GroupDescription: 'Allow access to ECS tasks'
-      VpcId: !Ref VPCID
+      GroupDescription: 'Allow HTTP access to Flask app'
+      VpcId: !ImportValue MyVPCID  # Import the VPC ID from another stack
       SecurityGroupIngress:
         - IpProtocol: 'tcp'
-          FromPort: 80
-          ToPort: 80
-          CidrIp: '0.0.0.0/0'
-        - IpProtocol: 'tcp'
-          FromPort: 3306
-          ToPort: 3306
+          FromPort: 5000
+          ToPort: 5000
           CidrIp: '0.0.0.0/0'
 
-  MyTaskDefinition:
+  FlaskAppTaskDefinition:
     Type: 'AWS::ECS::TaskDefinition'
     Properties:
-      Family: 'my-task-family'
+      Family: 'flask-app-task'
       NetworkMode: 'awsvpc'
       RequiresCompatibilities:
         - 'FARGATE'
-      Cpu: '1024'
-      Memory: '2048'
-      ExecutionRoleArn: !Ref TaskExecutionRoleArn
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !ImportValue TaskExecutionRoleArn  # Import the Task Execution Role ARN
+      TaskRoleArn: !ImportValue MyTaskExecutionRoleExportName
       ContainerDefinitions:
-        - Name: 'my-container'
-          Image: !Ref ECRRepositoryURI
+        - Name: 'flask-app-container'
+          Image: !ImportValue ECRRepositoryURI  # Import the ECR Repository URI
           PortMappings:
-            - ContainerPort: 80
+            - ContainerPort: 5000
               Protocol: 'tcp'
           LogConfiguration:
             LogDriver: 'awslogs'
             Options:
-              awslogs-group: '/ecs/my-service'
+              awslogs-group: '/ecs/flask-app-service'
               awslogs-region: !Ref 'AWS::Region'
               awslogs-stream-prefix: 'ecs'
           Environment:
-            - Name: 'DB_HOST'
-              Value: !Ref RDSInstanceEndpoint
-            - Name: 'DB_PORT'
-              Value: '3306'
+            - Name: 'FLASK_ENV'
+              Value: !Ref FlaskEnv
             - Name: 'DB_USER'
-              Value: 'admin'
-            - Name: 'DB_PASS'
+              Value: 'DB_Admin'
+            - Name: 'DB_PASSWORD'
               Value: !Ref DBPassword
+            - Name: 'DB_HOST'
+              Value: !ImportValue RDSInstanceEndpoint  # Import the RDS Endpoint
+            - Name: 'DB_PORT'
+              Value: '5432'
             - Name: 'DB_NAME'
-              Value: 'mydatabase'
+              Value: 'moviemaking_dev'
+            - Name: 'SECRET_KEY'
+              Value: 'supersecretkey'
 
-  MyService:
+  FlaskAppService:
     Type: 'AWS::ECS::Service'
-    DependsOn: MyTaskDefinition
     Properties:
-      Cluster: !Ref ECSClusterName
-      TaskDefinition: !Ref MyTaskDefinition
+      Cluster: !ImportValue MyECSClusterName  # Import the ECS Cluster Name
+      TaskDefinition: !Ref FlaskAppTaskDefinition
       DesiredCount: 2
       LaunchType: 'FARGATE'
       NetworkConfiguration:
         AwsvpcConfiguration:
           Subnets:
-            - !Ref PublicSubnetId
+            - !ImportValue PublicSubnetId  # Import the Public Subnet ID
           SecurityGroups:
             - !Ref MySecurityGroup
           AssignPublicIp: 'ENABLED'
