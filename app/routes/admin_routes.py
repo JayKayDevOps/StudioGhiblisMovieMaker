@@ -1,10 +1,14 @@
 from flask import Blueprint
+from flask import render_template, url_for
 admin_bp = Blueprint('admin', __name__)
 
-@admin_bp.route('/admin')
+@admin_bp.route('/admin', methods=['GET'])
 def admin_dashboard():
-    print("Admin Dashboard")
-    return "Admin Dashboard"
+    """ print("Admin Dashboard")
+    return "Admin Dashboard" """
+    return render_template('AdminLogin.html')
+    
+
 
 @admin_bp.route('/admin/bookings')
 def admin_bookings():
