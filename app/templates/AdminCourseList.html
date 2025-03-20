@@ -93,7 +93,7 @@
             <div class="button">Logout</div>
         </div>
         <div class="line"></div>
-        <a href="#" class="home-link">
+        <a href="{{ url_for('admin.admin_home') }}" class="home-link">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
@@ -101,33 +101,37 @@
         </a>
         <div class="course-list">
             <h3>Course List</h3>
-            <div class="course">
-
-                <!-- This section includes the output from the database. I've added two courses as an example,
-                    but this needs to be modified to match DB and use a function to repeat.
-                    The output from DB assumed here: image, name, date and places left. -->
-
-                <div class="course-info">
-                    <output name="course-image-1"><img src="https://placehold.co/80x73" alt="Course Image"></output>
-                    <output name="course-title-1">CREATING PONYO</output>
-                    <output name="course-date-1">18/03/2025</output>
-                    <div>Places left: <output name="course-places-1">Course full</output></div>
-                </div>
-                <div class="course-actions">
-                    <button class="button">View participants</button> <a href="#">Edit</a>  <a href="#">Delete</a>
-                </div>
-            </div>
+            
+            <!-- Dynamically render courses and modules -->
+            {% for course in courses %}
             <div class="course">
                 <div class="course-info">
-                    <output name="course-image-2"><img src="https://placehold.co/80x75" alt="Course Image"></output>
-                    <output name="course-title-2">MOVING CASTLE CREATIONS</output>
-                    <output name="course-date-2">10/12/2025</output>
-                    <div>Places left: <output name="course-places-2">5</output></div>
+                    <output name="course-image-{{ loop.index }}">
+                        <img src="https://placehold.co/80x75" alt="Course Image for {{ course.course_name }}">
+                    </output>
+                    <output name="course-title-{{ loop.index }}">{{ course.course_name }}</output>
+                    <output name="course-date-{{ loop.index }}">Start Date: TBD</output>
+                    <div>Places left: <output name="course-places-{{ loop.index }}">TBD</output></div>
                 </div>
                 <div class="course-actions">
-                    <button class="button">View participants</button> <a href="#">Edit</a>  <a href="#">Delete</a>
+                    <button class="button">View participants</button>
+                    <a href="#">Edit</a>
+                    <a href="#">Delete</a>
+                </div>
+                <div class="course-modules">
+                    <h4>Modules:</h4>
+                    {% if course.modules %}
+                    <ul>
+                        {% for module in course.modules %}
+                        <li><strong>{{ module.module_title }}</strong>: {{ module.module_description }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No modules available for this course.</p>
+                    {% endif %}
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
 </body>
