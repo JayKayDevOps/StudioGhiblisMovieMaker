@@ -1,4 +1,4 @@
-from app.models import db, Subscription, User, Course
+from app.models.models import db, Subscription, User, Course
 
 class AdminService:
     """Service layer for admin-related database operations."""

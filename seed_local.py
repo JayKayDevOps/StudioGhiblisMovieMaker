@@ -1,14 +1,19 @@
 import os
+import sys
 from flask import Flask
 from datetime import date
-from config import config  # Import configurations
-from models import db, User, Course, Module, CourseModule, Subscription  # Import models
+from app.config import config  # Import configurations
+from app.models.models import db, User, Course, Module, CourseModule, Subscription  # Import models
+
+# Ensure Python recognizes "app" as a package
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # Get environment setting
 env = os.getenv("FLASK_ENV", "development")
 app_config = config[env]  # Load the correct configuration
 
 # Create the Flask app and apply config
+print(f"Seeding database for {env} environment...")
 app = Flask(__name__)
 app.config.from_object(app_config)
 
@@ -17,8 +22,10 @@ db.init_app(app)
 
 def seed_database():
     """Populate the database with dummy users, courses, modules, and subscriptions."""
-
     with app.app_context():
+        # Ensure all tables exist
+        db.create_all()
+
         # Clear existing data
         db.session.query(Subscription).delete()
         db.session.query(CourseModule).delete()
@@ -40,7 +47,6 @@ def seed_database():
             User(first_name="Yoshifumi", second_name="Kondō", email="kondo@example.com"),
             User(first_name="Hiromasa", second_name="Yonebayashi", email="yonebayashi@example.com")
         ]
-
         for user in users:
             user.set_password("password123")
 
@@ -52,16 +58,11 @@ def seed_database():
 
         # Create dummy courses
         courses = [
-            Course(name="Moving Castle Creations", description="A 3D animation workshop inspired by Howl's Moving Castle.",
-                   price=150.00),
-            Course(name="Ghibli Storytelling Masterclass", description="Learn storytelling secrets from Studio Ghibli films.",
-                   price=200.00),
-            Course(name="Anime Character Design", description="Sketch and design your own anime characters!",
-                   price=100.00),
-            Course(name="Hand-Drawn Animation Basics", description="A deep dive into the world of traditional 2D animation.",
-                   price=180.00)
+            Course(name="Moving Castle Creations", description="A 3D animation workshop inspired by Howl's Moving Castle.", price=150.00),
+            Course(name="Ghibli Storytelling Masterclass", description="Learn storytelling secrets from Studio Ghibli films.", price=200.00),
+            Course(name="Anime Character Design", description="Sketch and design your own anime characters!", price=100.00),
+            Course(name="Hand-Drawn Animation Basics", description="A deep dive into the world of traditional 2D animation.", price=180.00)
         ]
-
         db.session.add_all(courses)
         db.session.commit()  # ✅ Commit so IDs are assigned
 
@@ -74,7 +75,6 @@ def seed_database():
             Module(title="Storyboard Design", description="Develop strong storytelling through visual storyboarding."),
             Module(title="Voice Acting & Sound", description="Explore voice-over techniques and sound design.")
         ]
-
         db.session.add_all(modules)
         db.session.commit()  # ✅ Commit so IDs are assigned
 
@@ -87,7 +87,6 @@ def seed_database():
             CourseModule(course_id=courses[1].id, module_id=modules[2].id),
             CourseModule(course_id=courses[2].id, module_id=modules[3].id),
         ]
-
         db.session.add_all(course_modules)
         db.session.commit()
 
@@ -100,11 +99,11 @@ def seed_database():
             Subscription(user_id=users[2].id, course_id=courses[2].id, special_requests="Prefer digital sketching over hand-drawn."),
             Subscription(user_id=users[3].id, course_id=courses[3].id, special_requests="Need subtitles for better understanding."),
         ]
-
         db.session.add_all(subscriptions)
         db.session.commit()
 
         print("✅ Subscriptions added successfully!")
 
 if __name__ == "__main__":
+    print("Seeding database...")
     seed_database()

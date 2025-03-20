@@ -1,5 +1,5 @@
 from app.services.admin_service import AdminService
-from app.models import db, User
+from app.models.models import db, User
 
 
 def test_get_all_users(app):

@@ -3,12 +3,12 @@ import os
 import subprocess  # To execute db_init.py
 from flask import Flask
 from flask_login import LoginManager
-from .models import db, User
+from app.models.models import db, User
 from sqlalchemy import text, inspect
-from .config import config  # Import configuration from config.py
-from .routes.public_routes import public_bp
-from .routes.user_routes import user_bp
-from .routes.admin_routes import admin_bp
+from app.config import config  # Import configuration from config.py
+from app.routes.public_routes import public_bp
+from app.routes.user_routes import user_bp
+from app.routes.admin_routes import admin_bp
 
 # Load Configuration Based on Environment
 env = os.getenv('FLASK_ENV', 'development')  # Get the environment
@@ -52,7 +52,7 @@ def load_user(user_id):
 
 # Run the Flask App
 if __name__ == '__main__':
-    # app.run(host="0.0.0.0", port=5000, debug=app.config.get('DEBUG', True))
-    app.run()
+    app.run(host="0.0.0.0", port=5000, debug=app.config.get('DEBUG', True))
+    # app.run()
 
 # docker run --name postgres-db -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=moviemaking_db -p 5432:5432 -d postgres
