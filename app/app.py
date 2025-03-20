@@ -3,12 +3,12 @@ import os
 import subprocess  # To execute db_init.py
 from flask import Flask
 from flask_login import LoginManager
-from models import db, User
+from .models import db, User
 from sqlalchemy import text, inspect
-from config import config  # Import configuration from config.py
-from routes.public_routes import public_bp
-from routes.user_routes import user_bp
-from routes.admin_routes import admin_bp
+from .config import config  # Import configuration from config.py
+from .routes.public_routes import public_bp
+from .routes.user_routes import user_bp
+from .routes.admin_routes import admin_bp
 
 # Load Configuration Based on Environment
 env = os.getenv('FLASK_ENV', 'development')  # Get the environment

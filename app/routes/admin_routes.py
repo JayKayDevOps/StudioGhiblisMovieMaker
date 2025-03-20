@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from services.admin_service import AdminService
+from app.services.admin_service import AdminService
 
 admin_bp = Blueprint('admin', __name__)
 admin_service = AdminService()  

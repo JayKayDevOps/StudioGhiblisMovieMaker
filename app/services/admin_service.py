@@ -1,7 +1,11 @@
-from models import db, Subscription, User, Course
+from app.models import db, Subscription, User, Course
 
 class AdminService:
     """Service layer for admin-related database operations."""
+
+    def __init__(self, db_session=None):
+        """Allow injecting a mock database session for testing."""
+        self.db_session = db_session or db.session
 
     def get_all_bookings(self):
         """Fetch all course bookings with user and course details."""
