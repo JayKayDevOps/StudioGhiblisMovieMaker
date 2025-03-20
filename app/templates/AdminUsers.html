@@ -1,11 +1,9 @@
-<!-- This is admin course list -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Course List</title>
+    <title>Users</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -43,29 +41,23 @@
             width: 100%;
         }
 
-        .course-list {
+        .user-list {
             padding: 20px;
         }
 
-        .course {
-            border: 1px solid black;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            position: relative;
+        table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-            .course output {
-                display: block;
-                margin-bottom: 5px;
-            }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
 
-        .course-actions {
-            position: absolute;
-            right: 10px;
-            bottom: 10px;
+        th {
+            background-color: #f4f4f4;
         }
 
         .home-link {
@@ -76,62 +68,63 @@
             color: #1E1E1E;
         }
 
-            .home-link svg {
-                margin-right: 5px;
-            }
+        .home-link svg {
+            margin-right: 5px;
+        }
+
+        p {
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Header -->
         <div class="header">
             <div>
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
-                <h1>Studio Ghibli’s Movie Maker</h1>
+                <h1>Admin - Users</h1>
             </div>
             <div class="button">Logout</div>
         </div>
         <div class="line"></div>
+
+        <!-- Home Link -->
         <a href="{{ url_for('admin.admin_home') }}" class="home-link">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
             Home
         </a>
-        <div class="course-list">
-            <h3>Course List</h3>
-            
-            <!-- Dynamically render courses and modules -->
-            {% for course in courses %}
-            <div class="course">
-                <div class="course-info">
-                    <output name="course-image-{{ loop.index }}">
-                        <img src="https://placehold.co/80x75" alt="Course Image for {{ course.course_name }}">
-                    </output>
-                    <output name="course-title-{{ loop.index }}">{{ course.course_name }}</output>
-                    <output name="course-date-{{ loop.index }}">Start Date: TBD</output>
-                    <div>Places left: <output name="course-places-{{ loop.index }}">TBD</output></div>
-                </div>
-                <div class="course-actions">
-                    <button class="button">View participants</button>
-                    <a href="#">Edit</a>
-                    <a href="#">Delete</a>
-                </div>
-                <div class="course-modules">
-                    <h4>Modules:</h4>
-                    {% if course.modules %}
-                    <ul>
-                        {% for module in course.modules %}
-                        <li><strong>{{ module.module_title }}</strong>: {{ module.module_description }}</li>
+
+        <!-- User List -->
+        <div class="user-list">
+            {% if users %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.user_id }}</td>
+                                <td>{{ user.full_name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.role }}</td>
+                            </tr>
                         {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p>No modules available for this course.</p>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No users found.</p>
+            {% endif %}
         </div>
     </div>
 </body>

@@ -90,10 +90,22 @@
             cursor: pointer;
             color: #1E1E1E;
         }
+        .MessageContainer {
+             position: fixed; /* Ensures the messages stay in place while scrolling */
+             top: 10px;       /* Distance from the top of the viewport */
+             right: 10px;     /* Distance from the right of the viewport */
+             z-index: 1000;   /* Ensures it appears above other elements */
+             background-color: white; /* Optional: Add a background to make it stand out */
+             padding: 10px;   /* Add padding for better readability */
+             border: 1px solid #ccc; /* Optional: Border for better visibility */
+             border-radius: 5px; /* Rounds the edges */
+             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Adds a subtle shadow */
+         }
+
     </style>
 </head>
-<body>
 
+<body>
     <div class="AdminLogIn">
         <div class="Frame1">
             <div class="Film">
@@ -108,19 +120,31 @@
             <p style="font-size:20px;font-weight:bold; color:black">Admin login</p>
         </div>
 
-        <div class="FormLogIn">
+        <!-- Updated Form Section -->
+        <form action="/admin/login" method="POST" class="FormLogIn">
             <div class="InputField">
-                <label>Email</label>
-                <input type="email" class="Input" placeholder="Enter your email">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required>
             </div>
             <div class="InputField">
-                <label>Password</label>
-                <input type="password" class="Input" placeholder="Enter your password">
+                <label for="password">Password</label>
+                <input id="password" type="password" name="password" class="Input" placeholder="Enter your password" required>
             </div>
-            <button class="Button">Sign In</button>
-            <a class="TextLink">Forgot password?</a>
+            <button type="submit" class="Button">Sign In</button>
+            <a href="/ForgotPassword" class="TextLink">Forgot password?</a>
+        </form>
+
+        <!-- Success and Error Messages -->
+        <div class="MessageContainer">
+            {% if error %}
+                <p class="ErrorMessage" style="color: red;">{{ error }}</p>
+            {% endif %}
+            {% if success %}
+                <p class="SuccessMessage" style="color: green;">{{ success }}</p>
+            {% endif %}
         </div>
     </div>
-
 </body>
+
 </html>
+
