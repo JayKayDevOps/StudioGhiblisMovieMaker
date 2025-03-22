@@ -1,27 +1,27 @@
+# tests/conftest.py
+
 import pytest
-from app.app import app as flask_app  # Changed import to use app/app.py directly
-from app.models.models import db
+from app import create_app
+from app.models import db  
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def app():
-    """Flask app configured for testing with an in-memory database."""
-    flask_app.config.update({
-        "TESTING": True,
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "SQLALCHEMY_TRACK_MODIFICATIONS": False,
-        "WTF_CSRF_ENABLED": False
-    })
+    """Creates a Flask app configured for testing with in-memory DB."""
+    app = create_app("testing")
 
-    with flask_app.app_context():
-        db.create_all()
+    with app.app_context():
+        db.create_all()  # Create tables in-memory before any tests
+        yield app
+        db.drop_all()    # Clean up after all tests are done
 
-    yield flask_app
 
-    with flask_app.app_context():
-        db.session.remove()
-        db.drop_all()
-
-@pytest.fixture
+@pytest.fixture()
 def client(app):
-    """Flask test client to simulate requests."""
+    """Returns Flask test client for making requests."""
     return app.test_client()
+
+
+@pytest.fixture()
+def runner(app):
+    """Returns Flask CLI runner (if you use CLI commands)."""
+    return app.test_cli_runner()

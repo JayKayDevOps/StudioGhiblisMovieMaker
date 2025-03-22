@@ -3,7 +3,7 @@ import sys
 from flask import Flask
 from datetime import date
 from app.config import config  # Import configurations
-from app.models.models import db, User, Course, Module, CourseModule, Subscription  # Import models
+from app.models import db, User, Course, Module, CourseModule, Subscription  # Import models
 
 # Ensure Python recognizes "app" as a package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))

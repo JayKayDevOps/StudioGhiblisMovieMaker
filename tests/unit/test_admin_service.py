@@ -1,5 +1,12 @@
+import pytest
 from app.services.admin_service import AdminService
-from app.models.models import db, User
+from datetime import datetime
+from app.models import db, User, Course, Subscription
+
+
+@pytest.fixture
+def admin_service():
+    return AdminService()
 
 
 def test_get_all_users(app):
@@ -24,3 +31,96 @@ def test_get_all_users(app):
         assert len(users) == 2
         assert users[0]["email"] == "user1@example.com"
         assert users[1]["role"] == "admin"
+
+
+def test_get_all_bookings(admin_service, app):
+
+    with app.app_context():
+        # Arrange: create user, course, and subscription
+        user = User(first_name="Hayao", second_name="Miyazaki", email="hayao@example.com", role="customer")
+        user.set_password("password123")
+        course = Course(name="Ghibli Storytelling", description="Deep dive", price=199.99)
+
+        db.session.add_all([user, course])
+        db.session.commit()
+
+        subscription = Subscription(
+            user_id=user.id,
+            course_id=course.id,
+            status="confirmed",
+            subscription_date=datetime(2024, 1, 1, 12, 0, 0),
+            special_requests="None"
+        )
+
+        db.session.add(subscription)
+        db.session.commit()
+
+        # Act
+        results = admin_service.get_all_bookings()
+
+        # Assert
+        assert len(results) == 1
+        booking = results[0]
+        assert booking["user_name"] == "Hayao Miyazaki"
+        assert booking["user_email"] == "hayao@example.com"
+        assert booking["course_name"] == "Ghibli Storytelling"
+        assert booking["status"] == "confirmed"
+        assert booking["subscription_date"] == "2024-01-01 12:00:00"
+
+def test_delete_booking_success(admin_service, app):
+    from app.models import User, Course, Subscription
+
+    with app.app_context():
+        # Arrange
+        user = User(first_name="Test", second_name="User", email="del@example.com")
+        user.set_password("123")
+        course = Course(name="Delete Test", description="...", price=50.0)
+        db.session.add_all([user, course])
+        db.session.commit()
+
+        sub = Subscription(user_id=user.id, course_id=course.id, status="confirmed")
+        db.session.add(sub)
+        db.session.commit()
+
+        # Act
+        result = admin_service.delete_booking(sub.id)
+
+        # Assert
+        assert result is True
+        assert db.session.get(Subscription, sub.id) is None
+
+
+def test_delete_booking_not_found(admin_service, app):
+    with app.app_context():
+        result = admin_service.delete_booking(9999)
+        assert result is False
+
+
+def test_update_booking_status_success(admin_service, app):
+    from app.models import User, Course, Subscription
+
+    with app.app_context():
+        # Arrange
+        user = User(first_name="Test", second_name="User", email="status@example.com")
+        user.set_password("123")
+        course = Course(name="Status Course", description="...", price=50.0)
+        db.session.add_all([user, course])
+        db.session.commit()
+
+        booking = Subscription(user_id=user.id, course_id=course.id, status="pending")
+        db.session.add(booking)
+        db.session.commit()
+
+        # Act
+        success = admin_service.update_booking_status(booking.id, "confirmed")
+
+        # Assert
+        assert success is True
+        assert booking.status == "confirmed"
+
+
+def test_update_booking_status_not_found(admin_service, app):
+    with app.app_context():
+        result = admin_service.update_booking_status(9999, "confirmed")
+        assert result is False
+

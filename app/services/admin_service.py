@@ -1,4 +1,4 @@
-from app.models.models import db, Subscription, User, Course
+from app.models import db, Subscription, User, Course
 
 class AdminService:
     """Service layer for admin-related database operations."""
@@ -66,3 +66,30 @@ class AdminService:
         except Exception as e:
             print(f"❌ Error fetching users: {e}")
             raise e  # Raise error to be handled by the route
+        
+    def delete_booking(self, booking_id):
+        """Deletes a booking by ID."""
+        try:
+            booking = db.session.get(Subscription, booking_id)
+            if not booking:
+                return False
+            db.session.delete(booking)
+            db.session.commit()
+            return True
+        except Exception as e:
+            print(f"❌ Error deleting booking {booking_id}: {e}")
+            return False
+
+    def update_booking_status(self, booking_id, new_status):
+        """Update the status of a booking."""
+        try:
+            booking = db.session.get(Subscription, booking_id)
+            if not booking:
+                return False
+
+            booking.status = new_status
+            db.session.commit()
+            return True
+        except Exception as e:
+            print(f"❌ Error updating booking {booking_id}: {e}")
+            return False

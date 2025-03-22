@@ -5,7 +5,7 @@ from flask_login import LoginManager
 from sqlalchemy import text, inspect
 
 from app.config import config
-from app.models.models import db, User
+from app.models import db, User
 from app.routes.public_routes import public_bp
 from app.routes.user_routes import user_bp
 from app.routes.admin_routes import admin_bp

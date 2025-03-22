@@ -9,7 +9,7 @@ from datetime import date
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from app.config import config  # Import configurations
-from app.models.models import db, User, Course, Module, CourseModule, Subscription  # Import models
+from app.models import db, User, Course, Module, CourseModule, Subscription  # Import models
 
 # Flask app configuration
 env = os.getenv("FLASK_ENV", "development")  # Determine environment (default: development)
