@@ -11,13 +11,29 @@ on:
 jobs:
   sonar:
     runs-on: ubuntu-latest
+    
+    services:
+      sonarqube:
+        image: sonarqube:lts
+        ports:
+          - 9000:9000
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Install SonarQube Scanner
-        run: npm install -g sonarqube-scanner
+        run: |
+          wget -O sonarqube.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip
+          unzip sonarqube.zip
+          export PATH=$PATH:$(pwd)/sonar-scanner-5.0.1.3006-linux/bin
+
+      - name: Wait for SonarQube to be Ready
+        run: sleep 30  # Give SonarQube time to start
 
       - name: Run SonarQube Scan
-        run: sonar-scanner -Dsonar.host.url=http://localhost:9000/ -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.token=${{ secrets.SONAR_TOKEN }} \
+           
