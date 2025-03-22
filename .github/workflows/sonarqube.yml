@@ -20,4 +20,4 @@ jobs:
         run: npm install -g sonarqube-scanner
 
       - name: Run SonarQube Scan
-        run: sonar-scanner -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+        run: sonar-scanner -Dsonar.token=${{ secrets.SONAR_TOKEN }}
