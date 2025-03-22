@@ -16,11 +16,17 @@ app = Flask(__name__)
 app.config.from_object(config[env])  # Load the appropriate config
 
 # Register Blueprints for different routes
+print("Registering Blueprints...")
 app.register_blueprint(public_bp)
 app.register_blueprint(user_bp)
 app.register_blueprint(admin_bp)
 
-# Initialize Database
+with app.app_context():
+    print("Registered Admin Blueprint Endpoints:")
+    for rule in app.url_map.iter_rules():
+        if rule.endpoint.startswith(admin_bp.name + "."):
+            print(rule, rule.endpoint)
+# Initialize Database#
 try:
     db.init_app(app)
     with app.app_context():
