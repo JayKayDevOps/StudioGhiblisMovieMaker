@@ -11,71 +11,103 @@
             background-color: #f4f4f4;
             display: flex;
             justify-content: center;
+            align-items: flex-start; /* Changed from center to flex-start */
             height: 100vh;
             margin: 0;
+            padding-top: 20px; /* Optional for extra spacing */
         }
-
+    
         .admin-homepage {
-            width: 393px;
-            height: 852px;
+            width: 450px;
             background: white;
-            position: relative;
             padding: 20px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
-
+    
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
-
-        .title {
+    
+        .StudioGhibliSMovieMaker {
             font-family: 'Kokoro', sans-serif;
             font-size: 20px;
-            font-weight: 400;
+            font-weight: bold;
             color: black;
         }
-
+    
         .logout-button {
             background: #2C2C2C;
             color: #F5F5F5;
             padding: 8px 12px;
             border-radius: 8px;
-            border: 1px solid #2C2C2C;
+            border: none;
             cursor: pointer;
             font-size: 14px;
+            transition: background 0.3s ease;
         }
-
-        .welcome-text {
-            font-size: 20px;
-            font-weight: 400;
-            margin-top: 20px;
-            text-align: center;
+    
+        .logout-button:hover {
+            background: #444444;
         }
-
-        .grid-item {
-            width: 122px;
-            height: 122px;
-            background: #D9D9D9;
-            border-radius: 10px;
-            border: 1px solid black;
-            text-align: center;
-            font-size: 15px;
-        }
-
+    
         .divider {
             width: 100%;
             height: 1px;
             background: black;
             margin: 10px 0;
         }
-
+    
+        .welcome-text {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    
+        table {
+            width: 100%;
+            border-spacing: 20px;
+        }
+    
+        .grid-item {
+            text-align: center;
+            background: #D9D9D9;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            padding: 20px;
+        }
+    
+        .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+    
+        .grid-item a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+    
+        .grid-item i {
+            font-size: 2rem;
+            color: #007BFF;
+        }
+    
+        .grid-item p {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+        }
     </style>
+    
 </head>
 <body>
-
     <div class="admin-homepage">
 
         <div class="header">
@@ -85,31 +117,43 @@
                 </svg>
             </div>
             <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
-            <button class="logout-button">Logout</button>
+            <a href="/admin/login">
+                <button class="logout-button">Logout</button>
+            </a>
         </div>
 
         <div class="divider"></div>
 
-        <div class="welcome-text">Welcome admin!</div>
+        <div class="welcome-text">Welcome Admin!</div>
 
         <div>
-            <table style="padding:20px">
+            <table>
                 <tr>
-                    <th class="grid-item"><div><span><i class="fas fa-users"></i></span><p>Profile & Users</p></div></th>
-                    <th class="grid-item"><div><span><i class="fas fa-video"></i></span><p>Course List</p></div></th>
+                    <th class="grid-item">
+                        <a href="{{ url_for('admin.admin_users') }}">
+                            <div><span><i class="fas fa-users"></i></span><p>Users</p></div>
+                        </a>
+                    </th>
+                    <th class="grid-item">
+                        <a href="{{ url_for('admin.admin_bookings') }}">
+                            <div><span><i class="fas fa-calendar-alt"></i></span><p>Course Bookings</p></div>
+                        </a>
+                    </th>
                 </tr>
                 <tr>
-                    <th class="grid-item"><div><span><i class="far fa-plus-square"></i></span><p>Create New</p></div></th>
-                    <th class="grid-item"><div><span><i class="far fa-dollar-sign"></i></span><p>Accounts</p></div></th>
+                    <th class="grid-item">
+                        <a href="{{ url_for('admin.list_courses') }}">
+                            <div><span><i class="fas fa-video"></i></span><p>Course List</p></div>
+                        </a>
+                    </th>
+                    <th class="grid-item">
+                        <a href="/AdminCreateCourse">
+                            <div><span><i class="far fa-plus-square"></i></span><p>Create New Course </p></div>
+                        </a>
+                    </th>
                 </tr>
-                <tr>
-                    <th class="grid-item"><div><span><i class="fas fa-archive"></i></span><p>Course History</p></div></th>
-                </tr>
-                
             </table>
         </div>
-
     </div>
-
 </body>
 </html>

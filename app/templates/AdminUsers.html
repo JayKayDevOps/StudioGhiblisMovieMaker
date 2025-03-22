@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 393px;
+            margin: auto;
+            position: relative;
+            background: white;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .button {
+            background: #2C2C2C;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #2C2C2C;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .line {
+            border-top: 1px solid black;
+            width: 100%;
+        }
+
+        .user-list {
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        .home-link {
+            margin: 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: underline;
+            color: #1E1E1E;
+        }
+
+        .home-link svg {
+            margin-right: 5px;
+        }
+
+        p {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div>
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h1>Admin - Users</h1>
+            </div>
+            <div class="button">Logout</div>
+        </div>
+        <div class="line"></div>
+
+        <!-- Home Link -->
+        <a href="{{ url_for('admin.admin_home') }}" class="home-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Home
+        </a>
+
+        <!-- User List -->
+        <div class="user-list">
+            {% if users %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User ID</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.user_id }}</td>
+                                <td>{{ user.full_name }}</td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.role }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No users found.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

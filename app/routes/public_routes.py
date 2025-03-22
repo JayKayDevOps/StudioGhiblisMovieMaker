@@ -3,8 +3,15 @@ public_bp = Blueprint('public', __name__)
 
 @public_bp.route('/', methods=['GET'])
 def home():
-    print("Home Page")
-    return render_template("homepage.html")
+   """  print("Home Page")
+    return render_template("homepage.html") """  
+   return render_template('homepage.html')
+
+
+@public_bp.route('/search', methods=['GET'])
+def search():
+    return render_template('Search.html')
+    
 
 @public_bp.route('/courses')
 def list_courses():

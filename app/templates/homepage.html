@@ -59,7 +59,9 @@
             </svg>
             <h1>Studio Ghibli’s Movie Maker</h1>
         </div>
-        <button class="button" onclick="window.location.href='/admin/login'">Admin login</button>
+        <form action = "{{ url_for('admin.admin_dashboard') }}" method ="get">
+        <button type="submit" class="button">Admin login</button>
+        </form>
         <img src="/Images/Ghibli.png" alt="Ghibli Image" width="380" height="218">
         <p style="font-size:20px; font-weight:bold">Welcome</p><p>We love anime and Studio Ghibli. Our mission is to share our enthusiasm through movie making courses!<br><br>Search our courses below or view the full list.</p>
         <div class="card">
@@ -69,6 +71,7 @@
                 <path d="M6.66666 16H25.3333M25.3333 16L16 6.66669M25.3333 16L16 25.3334" stroke="#1E1E1E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
         </div>
+        <a href="{{ url_for('public.search') }}">
         <div class="card">
             <img src="/Images/Water.png" alt="Search">
             <span>Search</span>
