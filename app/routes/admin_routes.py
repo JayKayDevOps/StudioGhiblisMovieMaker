@@ -1,8 +1,8 @@
 import logging
 from flask import Blueprint, render_template, request, render_template, redirect, url_for
 from app.services.admin_service import AdminService
-from models import User
-from services.admin_service import AdminService
+from app.models import User 
+from app.services.admin_service import AdminService
 
 # Configure logging
 logging.basicConfig(

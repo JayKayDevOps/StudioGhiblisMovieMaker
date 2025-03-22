@@ -87,6 +87,7 @@ config = {
     "development2": DevelopmentConfig2,
     "development": DevelopmentConfig,
     "production": ProductionConfig,
+    "testing": TestingConfig,
 }
 # Dynamically load the configuration
 flask_env = os.getenv("FLASK_ENV", "development2")

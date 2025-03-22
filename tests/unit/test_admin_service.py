@@ -1,7 +1,7 @@
 import pytest
 from app.services.admin_service import AdminService
 from datetime import datetime
-from app.models import db, User, Course, Subscription
+from app.models import db, User, Course, Subscriptions
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def test_get_all_bookings(admin_service, app):
         db.session.add_all([user, course])
         db.session.commit()
 
-        subscription = Subscription(
+        subscription = Subscriptions(
             user_id=user.id,
             course_id=course.id,
             status="confirmed",
@@ -68,7 +68,6 @@ def test_get_all_bookings(admin_service, app):
         assert booking["subscription_date"] == "2024-01-01 12:00:00"
 
 def test_delete_booking_success(admin_service, app):
-    from app.models import User, Course, Subscription
 
     with app.app_context():
         # Arrange
@@ -78,7 +77,7 @@ def test_delete_booking_success(admin_service, app):
         db.session.add_all([user, course])
         db.session.commit()
 
-        sub = Subscription(user_id=user.id, course_id=course.id, status="confirmed")
+        sub = Subscriptions(user_id=user.id, course_id=course.id, status="confirmed")
         db.session.add(sub)
         db.session.commit()
 
@@ -87,17 +86,17 @@ def test_delete_booking_success(admin_service, app):
 
         # Assert
         assert result is True
-        assert db.session.get(Subscription, sub.id) is None
+        assert db.session.get(Subscriptions, sub.id) is None
 
 
-def test_delete_booking_not_found(admin_service, app):
-    with app.app_context():
-        result = admin_service.delete_booking(9999)
-        assert result is False
+def test_update_booking_status_not_found(admin_service):
+    with pytest.raises(RuntimeError) as exc_info:
+        admin_service.update_booking_status(9999, "confirmed")
+    assert "Error updating booking status" in str(exc_info.value)
+
 
 
 def test_update_booking_status_success(admin_service, app):
-    from app.models import User, Course, Subscription
 
     with app.app_context():
         # Arrange
@@ -107,7 +106,7 @@ def test_update_booking_status_success(admin_service, app):
         db.session.add_all([user, course])
         db.session.commit()
 
-        booking = Subscription(user_id=user.id, course_id=course.id, status="pending")
+        booking = Subscriptions(user_id=user.id, course_id=course.id, status="pending")
         db.session.add(booking)
         db.session.commit()
 
@@ -119,8 +118,8 @@ def test_update_booking_status_success(admin_service, app):
         assert booking.status == "confirmed"
 
 
-def test_update_booking_status_not_found(admin_service, app):
-    with app.app_context():
-        result = admin_service.update_booking_status(9999, "confirmed")
-        assert result is False
+def test_delete_booking_not_found(admin_service):
+    with pytest.raises(RuntimeError) as exc_info:
+        admin_service.delete_booking(12345)
+    assert "Error deleting booking" in str(exc_info.value)
 

@@ -120,35 +120,36 @@ class AdminService:
         """Update the status of a booking."""
         logger.info(f"Updating booking status for ID: {booking_id} to {new_status}...")
         try:
-            booking = Subscriptions.query.get(booking_id)
+            booking = self.db_session.get(Subscriptions, booking_id)
             if not booking:
                 logger.warning(f"No booking found with ID {booking_id}.")
                 raise ValueError(f"No booking found for ID: {booking_id}")
 
             booking.status = new_status
-            db.session.commit()
+            self.db_session.commit()
             logger.info(f"Booking status updated successfully for ID: {booking_id}.")
-            return {"booking_id": booking_id, "status": new_status}
+            return True
         except Exception as e:
-            logger.error(f"Failed to update booking status: {e}", exc_info=True)
+            logger.error("Failed to update booking status", exc_info=True)
             raise RuntimeError("Error updating booking status.") from e
 
     def delete_booking(self, booking_id):
         """Delete a booking by its ID."""
         logger.info(f"Deleting booking with ID: {booking_id}...")
         try:
-            booking = Subscriptions.query.get(booking_id)
+            booking = self.db_session.get(Subscriptions, booking_id)
             if not booking:
                 logger.warning(f"No booking found with ID {booking_id}.")
                 raise ValueError(f"No booking found for ID: {booking_id}")
 
-            db.session.delete(booking)
-            db.session.commit()
+            self.db_session.delete(booking)
+            self.db_session.commit()
             logger.info(f"Booking deleted successfully for ID: {booking_id}.")
-            return {"message": f"Booking {booking_id} deleted successfully."}
+            return True
         except Exception as e:
-            logger.error(f"Failed to delete booking: {e}", exc_info=True)
+            logger.error("Failed to delete booking", exc_info=True)
             raise RuntimeError("Error deleting booking.") from e
+
 
 
 

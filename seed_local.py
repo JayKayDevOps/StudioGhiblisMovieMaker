@@ -3,7 +3,7 @@ import sys
 from flask import Flask
 from datetime import date
 from app.config import config  # Import configurations
-from app.models import db, User, Course, Module, CourseModule, Subscription  # Import models
+from app.models import db, User, Course, Module, CourseModule, Subscriptions  # Import models
 
 # Ensure Python recognizes "app" as a package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -27,7 +27,7 @@ def seed_database():
         db.create_all()
 
         # Clear existing data
-        db.session.query(Subscription).delete()
+        db.session.query(Subscriptions).delete()
         db.session.query(CourseModule).delete()
         db.session.query(Module).delete()
         db.session.query(Course).delete()
@@ -94,10 +94,10 @@ def seed_database():
 
         # Create dummy subscriptions (AFTER committing users & courses)
         subscriptions = [
-            Subscription(user_id=users[0].id, course_id=courses[0].id, special_requests="Need extra animation tools."),
-            Subscription(user_id=users[1].id, course_id=courses[1].id, special_requests="Would love a Q&A with the instructor."),
-            Subscription(user_id=users[2].id, course_id=courses[2].id, special_requests="Prefer digital sketching over hand-drawn."),
-            Subscription(user_id=users[3].id, course_id=courses[3].id, special_requests="Need subtitles for better understanding."),
+            Subscriptions(user_id=users[0].id, course_id=courses[0].id, special_requests="Need extra animation tools."),
+            Subscriptions(user_id=users[1].id, course_id=courses[1].id, special_requests="Would love a Q&A with the instructor."),
+            Subscriptions(user_id=users[2].id, course_id=courses[2].id, special_requests="Prefer digital sketching over hand-drawn."),
+            Subscriptions(user_id=users[3].id, course_id=courses[3].id, special_requests="Need subtitles for better understanding."),
         ]
         db.session.add_all(subscriptions)
         db.session.commit()

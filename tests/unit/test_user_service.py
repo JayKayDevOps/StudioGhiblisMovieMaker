@@ -1,6 +1,6 @@
 import pytest
 from app.services.user_service import UserService
-from app.models import db, User, Course, Subscription
+from app.models import db, User, Course, Subscriptions
 from datetime import datetime
 
 
@@ -19,7 +19,7 @@ def test_get_user_bookings(user_service, app):
         db.session.add_all([user, course])
         db.session.commit()
 
-        sub = Subscription(
+        sub = Subscriptions(
             user_id=user.id,
             course_id=course.id,
             status="confirmed",
@@ -53,7 +53,7 @@ def test_book_course_success(user_service, app):
 
         # Assert
         assert result is True
-        booking = Subscription.query.filter_by(user_id=user.id, course_id=course.id).first()
+        booking = Subscriptions.query.filter_by(user_id=user.id, course_id=course.id).first()
         assert booking is not None
         assert booking.special_requests == "Vegan lunch please"
         assert booking.status == "pending"

@@ -1,17 +1,17 @@
 
-from app.models import db, Subscription, Course
+from app.models import db, Subscriptions, Course
 
 class UserService:
     def get_user_bookings(self, user_id):
         """Fetch all bookings made by a specific user."""
         try:
             bookings = db.session.query(
-                Subscription.id,
+                Subscriptions.id,
                 Course.name.label("course_name"),
-                Subscription.status,
-                Subscription.subscription_date
-            ).join(Course, Subscription.course_id == Course.id)\
-             .filter(Subscription.user_id == user_id)\
+                Subscriptions.status,
+                Subscriptions.subscription_date
+            ).join(Course, Subscriptions.course_id == Course.id)\
+             .filter(Subscriptions.user_id == user_id)\
              .all()
 
             return [
@@ -31,13 +31,13 @@ class UserService:
         """Create a course subscription for a user."""
         try:
             # Prevent duplicate booking
-            existing = db.session.query(Subscription).filter_by(
+            existing = db.session.query(Subscriptions).filter_by(
                 user_id=user_id, course_id=course_id
             ).first()
             if existing:
                 return False  # Already booked
 
-            booking = Subscription(
+            booking = Subscriptions(
                 user_id=user_id,
                 course_id=course_id,
                 special_requests=special_requests or "",

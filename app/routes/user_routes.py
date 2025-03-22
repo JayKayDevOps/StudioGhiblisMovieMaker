@@ -1,4 +1,4 @@
-from app.models import db, Subscription, User, Course
+from app.models import db, Subscriptions, User, Course
 
 from flask import Blueprint
 user_bp = Blueprint('user', __name__)
