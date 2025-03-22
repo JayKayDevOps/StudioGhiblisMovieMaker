@@ -14,6 +14,7 @@ login_manager = LoginManager()
 
 def create_app(env="development"):
     """Application factory for creating and configuring the Flask app."""
+    
     app = Flask(__name__)
     app.config.from_object(config[env])
 
