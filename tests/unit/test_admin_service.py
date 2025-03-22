@@ -1,7 +1,7 @@
 import pytest
 from app.services.admin_service import AdminService
 from datetime import datetime
-from app.models import db, User, Course, Subscriptions
+from app.models import db, User, Course, Subscriptions, Module, CourseModule
 
 
 @pytest.fixture
@@ -123,3 +123,30 @@ def test_delete_booking_not_found(admin_service):
         admin_service.delete_booking(12345)
     assert "Error deleting booking" in str(exc_info.value)
 
+def test_get_all_course_details(admin_service, app):
+    with app.app_context():
+        # Arrange
+        course = Course(name="Spirited Animation", description="2D Magic", price=250.0)
+        module1 = Module(title="Drawing Spirits", description="Concept art and styling")
+        module2 = Module(title="Animating Movement", description="Make your spirits move!")
+
+        db.session.add_all([course, module1, module2])
+        db.session.commit()
+
+        mapping1 = CourseModule(course_id=course.id, module_id=module1.id)
+        mapping2 = CourseModule(course_id=course.id, module_id=module2.id)
+
+        db.session.add_all([mapping1, mapping2])
+        db.session.commit()
+
+        # Act
+        result = admin_service.get_all_course_details()
+
+        # Assert
+        assert len(result) == 1
+        course_data = result[0]
+        assert course_data["course_name"] == "Spirited Animation"
+        assert len(course_data["modules"]) == 2
+        module_titles = {m["module_title"] for m in course_data["modules"]}
+        assert "Drawing Spirits" in module_titles
+        assert "Animating Movement" in module_titles
