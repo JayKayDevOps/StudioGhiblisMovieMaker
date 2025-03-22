@@ -1,0 +1,23 @@
+name: SonarQube Scan
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - dev
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install SonarQube Scanner
+        run: npm install -g sonarqube-scanner
+
+      - name: Run SonarQube Scan
+        run: sonar-scanner -Dsonar.login=${{ secrets.SONAR_TOKEN }}
