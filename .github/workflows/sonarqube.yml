@@ -49,5 +49,5 @@ jobs:
           ~/.sonar-scanner/bin/sonar-scanner \
             -Dsonar.organization="ShivangiShaliniJames" \
             -Dsonar.host.url="https://sonarcloud.io" \
-            -Dsonar.token="7289a94c67dcc841bf00afda79aca7f33756c513"
+            -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
 
