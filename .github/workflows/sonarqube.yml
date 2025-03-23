@@ -16,9 +16,26 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download SonarQube Scanner
+      - name: Download and Install SonarQube Scanner
         run: |
-          curl -o sonarqube.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip
+          SONAR_SCANNER_URL="https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip"
+          
+          # Check if URL is accessible
+          HTTP_STATUS=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $SONAR_SCANNER_URL)
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "❌ Error: SonarQube Scanner URL is not accessible (HTTP $HTTP_STATUS)"
+            exit 1
+          fi
+
+          # Download and verify file
+          curl -o sonarqube.zip $SONAR_SCANNER_URL
+          
+          if [ ! -s sonarqube.zip ]; then
+            echo "❌ Error: Downloaded file is empty!"
+            exit 1
+          fi
+
+          # Unzip and configure SonarQube Scanner
           unzip sonarqube.zip
           mv sonar-scanner-5.0.1.3006-linux sonar-scanner
           echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add to PATH
@@ -28,5 +45,6 @@ jobs:
           sonar-scanner \
             -Dsonar.host.url=http://localhost:9000 \
             -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
 
            
