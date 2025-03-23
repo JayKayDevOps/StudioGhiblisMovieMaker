@@ -11,43 +11,32 @@ on:
 jobs:
   sonar:
     runs-on: ubuntu-latest
-
+    services:
+      sonarqube:
+        image: sonarqube:lts
+        ports:
+          - 9000:9000
+        options: --health-cmd="curl --silent --fail http://localhost:9000/api/system/health | grep '\"status\":\"OK\"'" # optional health check
+        env:
+          SONARQUBE_JDBC_URL: "jdbc:postgresql://localhost/sonar"
+          SONARQUBE_JDBC_USERNAME: "sonar"
+          SONARQUBE_JDBC_PASSWORD: "sonar"
+    
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Setup Java
-        uses: actions/setup-java@v11
+      - name: Set up JDK
+        uses: actions/setup-java@v2
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
 
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-
-      - name: Cache SonarCloud Scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v3
-        with:
-          path: ~/.sonar-scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-
-      - name: Install SonarCloud Scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+      - name: Install SonarQube Scanner
         run: |
-          curl -o sonarscanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-latest-linux.zip
-          unzip sonarscanner.zip -d ~/
-          mv ~/sonar-scanner-* ~/.sonar-scanner
-
-      - name: Run SonarCloud Analysis
+          curl -sS https://get.sonarqube.org/sonar-scanner-cli-5.0.1.3006-linux.zip -o sonar-scanner.zip
+          unzip sonar-scanner.zip
+          sudo mv sonar-scanner-*/bin/sonar-scanner /usr/local/bin/
+      
+      - name: Run SonarQube Scan
         run: |
-          ~/.sonar-scanner/bin/sonar-scanner \
-            -Dsonar.organization="ShivangiShaliniJames" \
-            -Dsonar.host.url="https://sonarcloud.io" \
-            -Dsonar.token="${{ secrets.SONAR_TOKEN }}"
-
+          sonar-scanner -Dsonar.host.url=http://localhost:9000 -Dsonar.login=${{ secrets.SONAR_TOKEN }}
