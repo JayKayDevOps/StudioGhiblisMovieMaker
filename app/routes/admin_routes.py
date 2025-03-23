@@ -61,7 +61,7 @@ def admin_home():
 
 
 @admin_bp.route('/admin/bookings', methods=['GET'])
-def admin_bookings():
+def admin_get_all_bookings():
     """Fetch and render all course bookings."""
     try:
         admin_service = AdminService()
@@ -77,7 +77,7 @@ def admin_bookings():
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
-def admin_users():
+def admin_get_all_users():
     """Fetch and render all users."""
     try:
         admin_service = AdminService()
@@ -93,7 +93,7 @@ def admin_users():
 
 
 @admin_bp.route('/admin/courses', methods=['GET'])
-def list_courses():
+def admin_get_all_courses():
     """Fetch and render all courses."""
     try:
         admin_service = AdminService()
@@ -114,16 +114,29 @@ def update_booking_status(booking_id):
     try:
         new_status = request.form.get('status')
         logger.info(f"Updating booking status for ID: {booking_id} to {new_status}")
-        # Add logic to update the booking's status
+        admin_service.update_booking_status(booking_id, new_status=new_status)
         return f"Booking status updated for ID {booking_id}."
     except Exception as e:
         logger.error(f"Failed to update booking status for ID {booking_id}: {e}", exc_info=True)
         return f"Failed to update booking status for ID {booking_id}.", 500
 
+@admin_bp.route('/admin/bookings/<int:booking_id>', methods=['PATCH'])
+def update_booking(booking_id):
+    """Update a booking by its ID."""
+    try:
+        logger.info(f"Updating booking with ID: {booking_id}")
+        updated_booking = request.form.get('booking')
+        admin_service.update_booking(booking_id, updated_booking)
+        # Add logic to update the booking
+        return f"Booking {booking_id} updated successfully."
+    except Exception as e:
+        logger.error(f"Failed to update booking with ID {booking_id}: {e}", exc_info=True)
+        return f"Failed to update booking {booking_id}.", 500
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['DELETE'])
 def delete_booking(booking_id):
     """Delete a booking by its ID."""
+    raise NotImplementedError("Implement deletion logic here")
     try:
         logger.info(f"Deleting booking with ID: {booking_id}")
         # Add logic to delete the booking

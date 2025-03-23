@@ -150,3 +150,86 @@ def test_get_all_course_details(admin_service, app):
         module_titles = {m["module_title"] for m in course_data["modules"]}
         assert "Drawing Spirits" in module_titles
         assert "Animating Movement" in module_titles
+
+def test_update_booking_success(admin_service, app):
+    with app.app_context():
+        user = User(first_name="Edit", second_name="Test", email="edit@example.com")
+        user.set_password("test123")
+        course = Course(name="Editing Course", description="...", price=100)
+        db.session.add_all([user, course])
+        db.session.commit()
+
+        booking = Subscriptions(user_id=user.id, course_id=course.id, status="pending", special_requests="Old notes")
+        db.session.add(booking)
+        db.session.commit()
+
+        # Act
+        result = admin_service.update_booking(booking.id, new_status="confirmed", special_requests="New notes")
+
+        # Assert
+        assert result is True
+        updated = db.session.get(Subscriptions, booking.id)
+        assert updated.status == "confirmed"
+        assert updated.special_requests == "New notes"
+
+
+def test_update_booking_not_found(admin_service):
+    with pytest.raises(RuntimeError) as e:
+        admin_service.update_booking(9999, new_status="confirmed")
+    assert "Error updating booking" in str(e.value)
+
+def test_create_course_success(admin_service, app):
+    with app.app_context():
+        course_id = admin_service.create_course(
+            name="Test Course",
+            description="Learn movie magic",
+            price=99.99
+        )
+
+        from app.models import Course
+        course = db.session.get(Course, course_id)
+
+        assert course is not None
+        assert course.name == "Test Course"
+        assert abs(course.price - 99.99) < 1e-6
+
+def test_update_course_success(admin_service, app):
+    with app.app_context():
+        from app.models import Course
+
+        course = Course(name="Old Name", description="Old Desc", price=10.0)
+        db.session.add(course)
+        db.session.commit()
+
+        success = admin_service.update_course(
+            course.id,
+            name="New Name",
+            description="Updated Desc",
+            price=25.0
+        )
+
+        updated = db.session.get(Course, course.id)
+
+        assert success is True
+        assert updated.name == "New Name"
+        assert updated.description == "Updated Desc"
+        assert abs(updated.price - 25.0) < 1e-6
+
+def test_delete_course_success(admin_service, app):
+    with app.app_context():
+        from app.models import Course, CourseModule, Module
+
+        course = Course(name="To Delete", description="...", price=42.0)
+        module = Module(title="Attached", description="Module")
+        db.session.add_all([course, module])
+        db.session.commit()
+
+        link = CourseModule(course_id=course.id, module_id=module.id)
+        db.session.add(link)
+        db.session.commit()
+
+        result = admin_service.delete_course(course.id)
+
+        assert result is True
+        assert db.session.get(Course, course.id) is None
+        assert db.session.query(CourseModule).filter_by(course_id=course.id).count() == 0

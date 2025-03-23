@@ -150,7 +150,78 @@ class AdminService:
             logger.error("Failed to delete booking", exc_info=True)
             raise RuntimeError("Error deleting booking.") from e
 
+    def update_booking(self, booking_id, new_status=None, special_requests=None):
+        """Update a booking's details."""
+        logger.info(f"Updating booking {booking_id} with status={new_status} and special_requests={special_requests}")
+        try:
+            booking = self.db_session.get(Subscriptions, booking_id)
+            if not booking:
+                logger.warning(f"No booking found with ID {booking_id}.")
+                raise ValueError(f"No booking found for ID: {booking_id}")
 
+            if new_status:
+                booking.status = new_status
+            if special_requests is not None:
+                booking.special_requests = special_requests
+
+            self.db_session.commit()
+            logger.info(f"Booking {booking_id} updated successfully.")
+            return True
+        except Exception as e:
+            logger.error("Failed to update booking", exc_info=True)
+            raise RuntimeError("Error updating booking.") from e
+        
+    def create_course(self, name, description, price):
+        """Create a new course."""
+        logger.info(f"Creating course: {name}")
+        try:
+            course = Course(name=name, description=description, price=price)
+            self.db_session.add(course)
+            self.db_session.commit()
+            logger.info(f"Course '{name}' created with ID: {course.id}")
+            return course.id
+        except Exception as e:
+            logger.error("Failed to create course", exc_info=True)
+            raise RuntimeError("Error creating course.") from e
+
+    def update_course(self, course_id, name=None, description=None, price=None):
+        """Update course details."""
+        logger.info(f"Updating course ID {course_id}")
+        try:
+            course = self.db_session.get(Course, course_id)
+            if not course:
+                raise ValueError("Course not found.")
+
+            if name:
+                course.name = name
+            if description:
+                course.description = description
+            if price is not None:
+                course.price = price
+
+            self.db_session.commit()
+            return True
+        except Exception as e:
+            logger.error("Failed to update course", exc_info=True)
+            raise RuntimeError("Error updating course.") from e
+
+    def delete_course(self, course_id):
+        """Delete a course and its module mappings."""
+        logger.info(f"Deleting course ID {course_id}")
+        try:
+            course = self.db_session.get(Course, course_id)
+            if not course:
+                raise ValueError("Course not found.")
+
+            # Delete CourseModule mappings first
+            self.db_session.query(CourseModule).filter_by(course_id=course_id).delete()
+
+            self.db_session.delete(course)
+            self.db_session.commit()
+            return True
+        except Exception as e:
+            logger.error("Failed to delete course", exc_info=True)
+            raise RuntimeError("Error deleting course.") from e
 
 
 
