@@ -14,6 +14,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+error_template = "error.html"
+not_implemented = NotImplementedError("Implement this logic")
+
 # Define Blueprint
 admin_bp = Blueprint('admin', __name__)
 admin_service = AdminService()  
@@ -48,7 +51,7 @@ def admin_dashboard():
                 return render_template("AdminLogin.html", error="Invalid email or password.")
         except Exception as e:
             logger.error(f"Error during login process: {e}", exc_info=True)
-            return render_template("error.html", error_message="Unexpected error occurred during login.")
+            return render_template(error_template, error_message="Unexpected error occurred during login.")
 
     return render_template("AdminLogin.html")
 
@@ -73,7 +76,7 @@ def admin_get_all_bookings():
         return render_template("AdminBookings.html", bookings=bookings)
     except Exception as e:
         logger.error(f"Error fetching bookings: {e}", exc_info=True)
-        return render_template("error.html", error_message="Failed to load bookings.")
+        return render_template(error_template, error_message="Failed to load bookings.")
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
@@ -89,7 +92,7 @@ def admin_get_all_users():
         return render_template("AdminUsers.html", users=users)
     except Exception as e:
         logger.error(f"Error fetching users: {e}", exc_info=True)
-        return render_template("error.html", error_message="Failed to load users.")
+        return render_template(error_template, error_message="Failed to load users.")
 
 
 @admin_bp.route('/admin/courses', methods=['GET'])
@@ -105,7 +108,7 @@ def admin_get_all_courses():
         return render_template("AdminCourseList.html", courses=courses)
     except Exception as e:
         logger.error(f"Error fetching courses: {e}", exc_info=True)
-        return render_template("error.html", error_message="Failed to load courses.")
+        return render_template(error_template, error_message="Failed to load courses.")
 
 
 @admin_bp.route('/admin/bookings/<int:booking_id>/status', methods=['POST'])
@@ -118,7 +121,7 @@ def update_booking_status(booking_id):
         return f"Booking status updated for ID {booking_id}."
     except Exception as e:
         logger.error(f"Failed to update booking status for ID {booking_id}: {e}", exc_info=True)
-        return f"Failed to update booking status for ID {booking_id}.", 500
+        return render_template(error_template, error_message="Failed to update booking status.")
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['PATCH'])
 def update_booking(booking_id):
@@ -131,16 +134,73 @@ def update_booking(booking_id):
         return f"Booking {booking_id} updated successfully."
     except Exception as e:
         logger.error(f"Failed to update booking with ID {booking_id}: {e}", exc_info=True)
-        return f"Failed to update booking {booking_id}.", 500
+        return render_template(error_template, error_message="Failed to load bookings"), 500
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['DELETE'])
 def delete_booking(booking_id):
     """Delete a booking by its ID."""
-    raise NotImplementedError("Implement deletion logic here")
+    raise not_implemented
     try:
         logger.info(f"Deleting booking with ID: {booking_id}")
         # Add logic to delete the booking
         return f"Booking {booking_id} deleted successfully."
     except Exception as e:
         logger.error(f"Failed to delete booking with ID {booking_id}: {e}", exc_info=True)
-        return f"Failed to delete booking {booking_id}.", 500
+        return render_template(error_template, error_message="Failed to delete booking"), 500
+
+
+# Create a new course
+@admin_bp.route('/admin/courses', methods=['POST'])
+def create_course():
+    try:
+        data = request.form
+        name = data.get("name")
+        description = data.get("description")
+        price = float(data.get("price"))
+
+        course_id = admin_service.create_course(name, description, price)
+
+        raise not_implemented
+        return f"Course created with ID {course_id}", 201
+
+    except Exception as e:
+        logger.error(f"Failed to create course: {e}", exc_info=True)
+        return render_template(error_template, error_message="Failed to create course"), 500
+
+
+@admin_bp.route('/admin/courses/<int:course_id>', methods=['PATCH'])
+def update_course(course_id):
+    try:
+        data = request.form
+        name = data.get("name")
+        description = data.get("description")
+        price = data.get("price")
+
+        result = admin_service.update_course(course_id, name, description, float(price) if price else None)
+
+        if result:
+            raise not_implemented
+            return f"Course {course_id} updated successfully", 200
+        else:
+            logger.error(f"Course {course_id} not found")
+            return render_template(error_template, error_message="Course not found"), 404
+
+    except Exception as e:
+        logger.error(f"Failed to update course {course_id}: {e}", exc_info=True)
+        return render_template(error_template, error_message="Failed to update course"), 500
+
+# Delete course
+@admin_bp.route('/admin/courses/<int:course_id>', methods=['DELETE'])
+def delete_course(course_id):
+    try:
+        result = admin_service.delete_course(course_id)
+        if result:
+            raise not_implemented
+            return f"Course {course_id} deleted successfully", 200
+        else:
+            logger.error(f"Course {course_id} not found")
+            return render_template(error_template, error_message="Course not found"), 404
+
+    except Exception as e:
+        logger.error(f"Failed to delete course {course_id}: {e}", exc_info=True)
+        return render_template(error_template, error_message="Failed to delete course"), 500
