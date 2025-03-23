@@ -3,7 +3,7 @@ from flask import Blueprint, render_template, request, render_template, redirect
 from app.services.admin_service import AdminService
 from app.models import User 
 from app.services.admin_service import AdminService
-from utils.decorators import role_required
+from app.utils.decorators import role_required
 
 # Configure logging
 logging.basicConfig(

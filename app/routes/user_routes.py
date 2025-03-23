@@ -3,7 +3,7 @@ from app.models import db, Subscriptions, User, Course
 from app.services.user_service import UserService
 from flask import Blueprint, render_template, request, redirect, url_for
 
-from utils.decorators import role_required
+from app.utils.decorators import role_required
 
 
 # Configure logging

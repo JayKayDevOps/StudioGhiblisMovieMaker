@@ -2,7 +2,6 @@ from flask import request, redirect, url_for, render_template, flash, Blueprint
 from flask_login import login_user
 from app.models import User
 
-from models import User
 public_bp = Blueprint('public', __name__)
 
 @public_bp.route('/', methods=['GET'])
