@@ -16,27 +16,38 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Start SonarQube Container
+      - name: Setup Java
+        uses: actions/setup-java@v11
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Cache SonarCloud packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+
+      - name: Cache SonarCloud Scanner
+        id: cache-sonar-scanner
+        uses: actions/cache@v3
+        with:
+          path: ~/.sonar-scanner
+          key: ${{ runner.os }}-sonar-scanner
+          restore-keys: ${{ runner.os }}-sonar-scanner
+
+      - name: Install SonarCloud Scanner
+        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
         run: |
-          docker run -d --name sonar -p 9000:9000 sonarqube:lts
-          echo "Waiting for SonarQube to start..."
-          sleep 60  # Wait for SonarQube to be fully ready
+          curl -o sonarscanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-latest-linux.zip
+          unzip sonarscanner.zip -d ~/
+          mv ~/sonar-scanner-* ~/.sonar-scanner
 
-      - name: Check SonarQube Logs (Debugging)
-        run: docker logs sonar || true  # Don't fail the job if logs show warnings
-
-      - name: Install SonarQube Scanner
+      - name: Run SonarCloud Analysis
         run: |
-          curl -o sonarqube.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip
-          unzip sonarqube.zip
-          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH
+          ~/.sonar-scanner/bin/sonar-scanner \
+            -Dsonar.organization="ShivangiShaliniJames" \
+            -Dsonar.host.url="https://sonarcloud.io" \
+            -Dsonar.token="7289a94c67dcc841bf00afda79aca7f33756c513"
 
-      - name: Run SonarQube Scan
-        run: |
-          sonar-scanner \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
-
-      - name: Stop SonarQube Container
-        run: docker stop sonar
