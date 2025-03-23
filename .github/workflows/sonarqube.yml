@@ -12,39 +12,19 @@ jobs:
   sonar:
     runs-on: ubuntu-latest
 
+    services:
+      sonarqube:
+        image: sonarqube:lts
+        ports:
+          - 9000:9000
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Download and Install SonarQube Scanner
-        run: |
-          SONAR_SCANNER_URL="https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip"
-          
-          # Check if URL is accessible
-          HTTP_STATUS=$(curl -o /dev/null --silent --head --write-out '%{http_code}\n' $SONAR_SCANNER_URL)
-          if [ "$HTTP_STATUS" -ne 200 ]; then
-            echo "❌ Error: SonarQube Scanner URL is not accessible (HTTP $HTTP_STATUS)"
-            exit 1
-          fi
-
-          # Download and verify file
-          curl -o sonarqube.zip $SONAR_SCANNER_URL
-          
-          if [ ! -s sonarqube.zip ]; then
-            echo "❌ Error: Downloaded file is empty!"
-            exit 1
-          fi
-
-          # Unzip and configure SonarQube Scanner
-          unzip sonarqube.zip
-          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
-          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH  # Add to PATH
-
       - name: Run SonarQube Scan
         run: |
-          sonar-scanner \
-            -Dsonar.host.url=http://localhost:9000 \
-            -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-
-
-           
+          docker run --rm \
+            -e SONAR_HOST_URL="http://localhost:9000" \
+            -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
+            sonarsource/sonar-scanner-cli
