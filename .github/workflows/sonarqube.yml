@@ -12,28 +12,31 @@ jobs:
   sonar:
     runs-on: ubuntu-latest
 
-    services:
-      sonarqube:
-        image: sonarqube:lts
-        ports:
-          - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/api/system/health || exit 1"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Wait for SonarQube to Start
-        run: sleep 60  # Wait for SonarQube to be fully ready
+      - name: Start SonarQube Container
+        run: |
+          docker run -d --name sonar -p 9000:9000 sonarqube:lts
+          echo "Waiting for SonarQube to start..."
+          sleep 60  # Wait for SonarQube to be fully ready
+
+      - name: Check SonarQube Logs (Debugging)
+        run: docker logs sonar || true  # Don't fail the job if logs show warnings
+
+      - name: Install SonarQube Scanner
+        run: |
+          curl -o sonarqube.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-5.0.1.3006-linux.zip
+          unzip sonarqube.zip
+          mv sonar-scanner-5.0.1.3006-linux sonar-scanner
+          echo "$(pwd)/sonar-scanner/bin" >> $GITHUB_PATH
 
       - name: Run SonarQube Scan
         run: |
-          docker run --rm \
-            --network=host \
-            -e SONAR_HOST_URL="http://localhost:9000" \
-            -e SONAR_TOKEN="${{ secrets.SONAR_TOKEN }}" \
-            sonarsource/sonar-scanner-cli
+          sonar-scanner \
+            -Dsonar.host.url=http://localhost:9000 \
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: Stop SonarQube Container
+        run: docker stop sonar
