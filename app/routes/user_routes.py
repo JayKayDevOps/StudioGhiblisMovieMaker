@@ -3,6 +3,8 @@ from app.models import db, Subscriptions, User, Course
 from app.services.user_service import UserService
 from flask import Blueprint, render_template, request, redirect, url_for
 
+from utils.decorators import role_required
+
 
 # Configure logging
 logging.basicConfig(
@@ -22,10 +24,12 @@ user_id = 1 # mocked for now
 user_bp = Blueprint('user', __name__)
 
 @user_bp.route('/dashboard')
+@role_required('user')
 def dashboard():
     raise not_implemented
 
 @user_bp.route('/book-course/<int:course_id>', methods=['POST'])
+@role_required('user')
 def book_course():
     try:
         course_id = int(request.form.get('course_id'))
@@ -41,6 +45,7 @@ def book_course():
         return render_template(error_template, error_message="Failed to book course."), 500
 
 @user_bp.route('/my-courses')
+@role_required('user')
 def my_courses():
     try:
         bookings = user_service.get_user_bookings(user_id)

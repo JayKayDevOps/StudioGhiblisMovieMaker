@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, render_template, redirect
 from app.services.admin_service import AdminService
 from app.models import User 
 from app.services.admin_service import AdminService
+from utils.decorators import role_required
 
 # Configure logging
 logging.basicConfig(
@@ -64,6 +65,7 @@ def admin_home():
 
 
 @admin_bp.route('/admin/bookings', methods=['GET'])
+@role_required('admin')
 def admin_get_all_bookings():
     """Fetch and render all course bookings."""
     try:
@@ -80,6 +82,7 @@ def admin_get_all_bookings():
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
+@role_required('admin')
 def admin_get_all_users():
     """Fetch and render all users."""
     try:
@@ -96,6 +99,7 @@ def admin_get_all_users():
 
 
 @admin_bp.route('/admin/courses', methods=['GET'])
+@role_required('admin')
 def admin_get_all_courses():
     """Fetch and render all courses."""
     try:
@@ -112,6 +116,7 @@ def admin_get_all_courses():
 
 
 @admin_bp.route('/admin/bookings/<int:booking_id>/status', methods=['POST'])
+@role_required('admin')
 def update_booking_status(booking_id):
     """Update the status of a booking."""
     try:
@@ -124,6 +129,7 @@ def update_booking_status(booking_id):
         return render_template(error_template, error_message="Failed to update booking status.")
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['PATCH'])
+@role_required('admin')
 def update_booking(booking_id):
     """Update a booking by its ID."""
     try:
@@ -137,6 +143,7 @@ def update_booking(booking_id):
         return render_template(error_template, error_message="Failed to load bookings"), 500
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['DELETE'])
+@role_required('admin')
 def delete_booking(booking_id):
     """Delete a booking by its ID."""
     raise not_implemented
@@ -151,6 +158,7 @@ def delete_booking(booking_id):
 
 # Create a new course
 @admin_bp.route('/admin/courses', methods=['POST'])
+@role_required('admin')
 def create_course():
     try:
         data = request.form
@@ -169,6 +177,7 @@ def create_course():
 
 
 @admin_bp.route('/admin/courses/<int:course_id>', methods=['PATCH'])
+@role_required('admin')
 def update_course(course_id):
     try:
         data = request.form
@@ -191,6 +200,7 @@ def update_course(course_id):
 
 # Delete course
 @admin_bp.route('/admin/courses/<int:course_id>', methods=['DELETE'])
+@role_required('admin')
 def delete_course(course_id):
     try:
         result = admin_service.delete_course(course_id)
