@@ -8,14 +8,14 @@ COPY requirements.txt requirements.txt
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the entire project into the container
-COPY . .
-
 # Copy the entrypoint script into the container
 COPY entrypoint.sh /app/entrypoint.sh
 
 # Make the entrypoint script executable
 RUN chmod +x /app/entrypoint.sh
+
+# Copy the entire project into the container
+COPY . .
 
 # Expose the port your Flask app uses
 EXPOSE 5000
@@ -24,4 +24,4 @@ EXPOSE 5000
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Command to run the Flask app
-CMD ["python", "app/app.py"]
+CMD ["python", "run.py"]
