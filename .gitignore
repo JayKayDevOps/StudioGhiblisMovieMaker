@@ -69,5 +69,5 @@ dmypy.json
 Thumbs.db
 
 # Environment variables
-.env
+.env.dev
 *.env

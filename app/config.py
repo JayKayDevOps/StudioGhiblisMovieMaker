@@ -12,19 +12,24 @@ def get_secret(secret_name, region_name="eu-west-1"):
         secret = json.loads(secret_value['SecretString'])
         return secret
     except Exception as e:
-        raise Exception(f"Error retrieving secret: {e}")
+        raise RuntimeError(f"Error retrieving secret: {e}")
 
 class Config:
-    """Base configuration with common settings."""
+    SECRET_KEY = "supersecretkey"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    CREATE_DB = False
+
 
 class DevelopmentConfig(Config):
-        # Use Docker service name for DB_HOST when using Docker Compose - used for runnning localy
-    DB_USER = os.getenv('DB_USER', 'postgres')
-    DB_PASSWORD = os.getenv('DB_PASSWORD', 'postgres')
-    DB_HOST = os.getenv('DB_HOST', 'db')  # Use 'db' as service name from docker-compose.yml
-    DB_PORT = os.getenv('DB_PORT', '5432')
-    DB_NAME = os.getenv('DB_NAME', 'moviemaking_db')
+    DEBUG = True
+    SQLALCHEMY_ECHO = True
+    CREATE_DB = True
+
+    DB_USER = "postgres"
+    DB_PASSWORD = "postgres"
+    DB_HOST = "localhost"
+    DB_PORT = "5432"
+    DB_NAME = "moviemaking_db"
 
     SQLALCHEMY_DATABASE_URI = (
         f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
@@ -55,41 +60,34 @@ class DevelopmentConfig2(Config):
 
 
 class ProductionConfig(Config):
-    """Production configuration (Amazon RDS via AWS Secrets Manager)."""
     DEBUG = False
     CREATE_DB = False
 
-    # Securely load AWS Secrets Manager
-    region_name = os.getenv("AWS_REGION", "eu-west-1")
-    try:
-        secrets = get_secret(secret_name="DB_PASSWORD_DEV", region_name=region_name)
-        DB_PASSWORD = secrets.get("DB_PASSWORD")
-    except Exception as e:
-        print(f"Warning: Failed to retrieve secret. Using fallback. Error: {e}")
-        
-
-    # Load remaining environment variables
-    DB_USER = os.getenv("DB_USER")
-    DB_HOST = os.getenv("DB_HOST")
+    DB_USER = os.getenv("DB_USER", "postgres")
+    DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
+    DB_HOST = os.getenv("DB_HOST", "localhost")
     DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME")
-
-    # Validate required variables in production
-    if os.getenv("FLASK_ENV") == "production":
-        required_vars = ["DB_USER", "DB_PASSWORD", "DB_HOST", "DB_NAME"]
-        missing_vars = [var for var in required_vars if not locals().get(var)]
-        if missing_vars:
-            raise ValueError(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+    DB_NAME = os.getenv("DB_NAME", "moviemaking_db")
 
     SQLALCHEMY_DATABASE_URI = (
         f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
 
-# Dictionary to map environment names to config classes
+
+class TestingConfig(Config):
+    TESTING = True
+    DEBUG = False
+    CREATE_DB = True
+    WTF_CSRF_ENABLED = False
+
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+
+
 config = {
     "development2": DevelopmentConfig2,
     "development": DevelopmentConfig,
     "production": ProductionConfig,
+    "testing": TestingConfig,
 }
 # Dynamically load the configuration
 flask_env = os.getenv("FLASK_ENV", "development2")
