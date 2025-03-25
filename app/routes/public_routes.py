@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, render_template
+from flask import Blueprint, request, render_template 
 from app.models import Course
 from app.services.public_service import PublicService
 
