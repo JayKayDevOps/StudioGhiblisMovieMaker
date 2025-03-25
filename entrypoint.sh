@@ -11,7 +11,7 @@ ls /app/app
 
 # Run the seed script
 echo "🔄 Running seed.py to seed the database..."
-if python app/seed.py; then
+if python /app/seed.py; then
     echo "✅ Database seeding completed successfully!"
 else
     echo "❌ Database seeding failed. Exiting..."
@@ -20,4 +20,4 @@ fi
 
 # Start the Flask app
 echo "🚀 Starting Flask application..."
-exec python run.py
+exec python /app/app.py
