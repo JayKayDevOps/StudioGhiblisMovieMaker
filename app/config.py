@@ -18,6 +18,8 @@ class Config:
     SECRET_KEY = "supersecretkey"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CREATE_DB = False
+    SESSION_PERMANENT = False
+    SESSION_USE_SIGNER = True 
 
 
 class DevelopmentConfig(Config):

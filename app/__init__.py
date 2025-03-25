@@ -1,5 +1,6 @@
 import os
 import subprocess
+import logging  # Import logging module
 from flask import Flask
 from flask_login import LoginManager
 from sqlalchemy import text, inspect
@@ -12,6 +13,17 @@ from app.routes.admin_routes import admin_bp
 
 login_manager = LoginManager()
 
+# Set up logging
+logging.basicConfig(
+    level=logging.DEBUG,  # Options: DEBUG, INFO, WARNING, ERROR, CRITICAL
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("app.log"),  # Log to a file named app.log
+        logging.StreamHandler()         # Log to the console
+    ]
+)
+logger = logging.getLogger(__name__)
+
 def create_app(env="development"):
     """Application factory for creating and configuring the Flask app."""
     
@@ -20,9 +32,11 @@ def create_app(env="development"):
 
     # Register blueprints
     print("🔧 Registering Blueprints...")
-    app.register_blueprint(public_bp)
-    app.register_blueprint(user_bp)
+    app.register_blueprint(public_bp, url_prefix='/public')
+    app.register_blueprint(user_bp, url_prefix='/user')
     app.register_blueprint(admin_bp)
+
+    logger.info("Blueprints registered successfully")
 
     with app.app_context():
         print("🔍 Registered Admin Blueprint Endpoints:")
@@ -54,5 +68,7 @@ def create_app(env="development"):
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    logger.info("Flask-Login initialized")
 
     return app
