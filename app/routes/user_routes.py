@@ -289,6 +289,4 @@ def my_courses():
         logger.error(f"❌ Error fetching user courses: {e}", exc_info=True)
         return "❌ Failed to retrieve your courses", 500
 
-@user_bp.route('/logout')
-def logout():
-    raise not_implemented
+
