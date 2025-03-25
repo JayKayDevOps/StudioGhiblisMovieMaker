@@ -74,8 +74,4 @@ def create_app(env="development"):
     login_manager.init_app(app)
     logger.info("Flask-Login initialized")
 
-    @login_manager.user_loader
-    def load_user(user_id):
-        return User.query.get(int(user_id))
-
     return app
