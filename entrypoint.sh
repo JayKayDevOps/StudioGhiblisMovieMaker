@@ -20,4 +20,4 @@ fi
 
 # Start the Flask app
 echo "🚀 Starting Flask application..."
-exec python /app/app.py
+exec python /app/run.py
