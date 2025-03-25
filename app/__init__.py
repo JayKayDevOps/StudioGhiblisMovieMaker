@@ -69,9 +69,6 @@ def create_app(env="development"):
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Initialize Flask-Login
-    login_manager = LoginManager()
-    login_manager.init_app(app)
     logger.info("Flask-Login initialized")
 
     return app
