@@ -2,9 +2,6 @@ name: Build & Deploy
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - test-connection-(not-to-go-to-dev)
 
 jobs:
   configure-aws:
