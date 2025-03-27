@@ -139,6 +139,15 @@ class AdminService:
         try:
             # Fetch the booking
             booking = self.get_booking(booking_id)
+
+            if not booking:
+               logger.warning(f"Booking with ID {booking_id} not found.")
+               raise ValueError(f"Booking with ID {booking_id} not found.")
+
+            # Reattach the booking if necessary
+            if not self.db_session.is_active:
+               booking = self.db_session.merge(booking)
+
             
             # Delete the booking
             self.db_session.delete(booking)
@@ -163,14 +172,42 @@ class AdminService:
 
     def update_booking(self, booking_id, **kwargs):
         """Update a booking by its ID."""
-        booking = self.get_booking(booking_id)
-        if booking:
+        try:
+            # Fetch the booking by ID
+            booking = self.get_booking(booking_id)
+
+            # Handle case where booking does not exist
+            if not booking:
+                logger.warning(f"Booking with ID {booking_id} not found.")
+                raise ValueError(f"Booking with ID {booking_id} not found.")
+
+            # Reattach booking to session if it is detached
+            if not self.db_session.is_active:
+                booking = self.db_session.merge(booking)
+
+            # Update booking attributes
             for key, value in kwargs.items():
                 if hasattr(booking, key):
                     setattr(booking, key, value)
+                else:
+                    logger.warning(f"Attribute '{key}' does not exist on booking and was ignored.")
+
+            # Commit changes to the database
             self.db_session.commit()
+
+            # Log success
+            logger.info(f"Successfully updated booking with ID {booking_id}.")
             return booking
-        return None
+
+        except ValueError as ve:
+            # Handle cases where the booking is not found
+            logger.error(str(ve))
+            raise
+        except Exception as e:
+            # Rollback session on unexpected errors
+            self.db_session.rollback()
+            logger.error("Failed to update booking", exc_info=True)
+            raise RuntimeError("Error updating booking.") from e
 
         
     def create_course(self, name, description, price):
@@ -194,6 +231,11 @@ class AdminService:
             if not course:
                 raise ValueError("Course not found.")
 
+            # Reattach the course if it's detached
+            if not self.db_session.is_active:
+                course = self.db_session.merge(course)
+
+            # Update course attributes
             if name:
                 course.name = name
             if description:
@@ -215,15 +257,30 @@ class AdminService:
             if not course:
                 raise ValueError("Course not found.")
 
+            # Reattach the course to the session if it is detached
+            if not self.db_session.is_active:
+                course = self.db_session.merge(course)
+
             # Delete CourseModule mappings first
             self.db_session.query(CourseModule).filter_by(course_id=course_id).delete()
 
             self.db_session.delete(course)
             self.db_session.commit()
+            logger.info(f"Successfully deleted course ID {course_id}")
             return True
+
+        except ValueError as ve:
+            # Handle cases where the course is not found
+            logger.warning(f"Course with ID {course_id} not found: {ve}")
+            raise
+
         except Exception as e:
+            # Rollback session on unexpected errors
+            self.db_session.rollback()
             logger.error("Failed to delete course", exc_info=True)
             raise RuntimeError("Error deleting course.") from e
+
+
    
   
     def get_existing_course(self):
