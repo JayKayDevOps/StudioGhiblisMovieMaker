@@ -5,7 +5,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Course List</title>
+    <title>Studio Ghibli’s Movie Maker</title>
+    <script src="https://kit.fontawesome.com/6ef668882c.js" crossorigin="anonymous"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,6 +20,10 @@
             margin: auto;
             position: relative;
             background: white;
+            border: 1px solid #d9d9d9; /* Optional border for better alignment */
+            border-radius: 8px;
+            padding: 20px; /* Padding for a unified look */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
         }
 
         .header {
@@ -28,14 +33,18 @@
             padding: 20px;
         }
 
-        .button {
+        .Button {
+            padding: 10px 20px;
             background: #2C2C2C;
-            color: white;
-            padding: 10px;
             border-radius: 8px;
-            border: 1px solid #2C2C2C;
-            text-align: center;
+            color: white;
+            font-size: 14px;
             cursor: pointer;
+            border: none;
+            text-align: center;
+            margin: 10px auto; /* Centers button horizontally */
+            display: block; /* Allows centering via margin */
+
         }
 
         .line {
@@ -79,6 +88,8 @@
             .home-link svg {
                 margin-right: 5px;
             }
+         
+
     </style>
 </head>
 <body>
@@ -90,10 +101,9 @@
                 </svg>
                 <h1>Studio Ghibli’s Movie Maker</h1>
             </div>
-            <div class="button">Logout</div>
         </div>
         <div class="line"></div>
-        <a href="{{ url_for('admin.admin_home') }}" class="home-link">
+        <a href="{{ url_for('public.home') }}" class="home-link">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
@@ -104,35 +114,42 @@
             
             <!-- Dynamically render courses and modules -->
             {% for course in courses %}
-            <div class="course">
-                <div class="course-info">
-                    <output name="course-image-{{ loop.index }}">
-                        <img src="https://placehold.co/80x75" alt="Course Image for {{ course.course_name }}">
-                    </output>
-                    <output name="course-title-{{ loop.index }}">{{ course.course_name }}</output>
-                    <output name="course-date-{{ loop.index }}">Start Date: TBD</output>
-                    <div>Places left: <output name="course-places-{{ loop.index }}">TBD</output></div>
+            <output name="course-id-{{ loop.index }}">{{ course.id }}</output>
+            <form method="GET" action="{{ url_for('user.booking') }}">
+                <div class="course">
+                    <div class="course-info">
+                        <output name="course-image-{{ loop.index }}">
+                            <img src="https://placehold.co/80x75" alt="Course Image for {{ course.course_name }}">
+                        </output>
+                        <output name="course-title-{{ loop.index }}">{{ course.name }}</output>
+                        <output name="course-date-{{ loop.index }}">Start Date: TBD</output>
+                        <output name="course-id-{{ loop.index }}">{{ course.id }}</output>
+                        <div>Places left: <output name="course-places-{{ loop.index }}">TBD</output></div>
+                    </div>
+                    <div class="course-actions">
+                        <!-- Pass the course ID as a hidden input -->
+                        <input type="hidden" name="course_id" value="{{ course.id }}">
+                        <button type="submit" class="button">Book</button>
+                    </div>
+                    
+                    <div class="course-modules">
+                        <h4>Modules:</h4>
+                        {% if course.modules %}
+                        <ul>
+                            {% for module in course.modules %}
+                            <li><strong>{{ module.module_title }}</strong>: {{ module.module_description }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p>No modules available for this course.</p>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="course-actions">
-                    <a href="{{ url_for('admin.admin_bookings', course_id=course.id) }}" class="button">View participants</a>
-                    <a href="{{ url_for('admin.admin_bookings') }}">Edit</a>
-                    <a href="{{ url_for('admin.admin_bookings') }}">Delete</a>
-                </div>
-                <div class="course-modules">
-                    <h4>Modules:</h4>
-                    {% if course.modules %}
-                    <ul>
-                        {% for module in course.modules %}
-                        <li><strong>{{ module.module_title }}</strong>: {{ module.module_description }}</li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p>No modules available for this course.</p>
-                    {% endif %}
-                </div>
-            </div>
+            </form>
             {% endfor %}
+            
         </div>
+        
     </div>
 </body>
 </html>

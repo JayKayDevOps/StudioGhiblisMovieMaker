@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Ghibli’s Movie Maker</title>
+    <script src="https://kit.fontawesome.com/6ef668882c.js" crossorigin="anonymous"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+        }
+
+        .container {
+            width: 450px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Header Styling */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .StudioGhibliSMovieMaker {
+            font-family: 'Kokoro', sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+        }
+
+        .logout-button {
+            background: #2C2C2C;
+            color: #F5F5F5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background: #444444;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: black;
+            margin: 10px 0;
+        }
+
+        /* Flash Messages */
+        .flash-messages {
+            margin: 10px auto;
+            text-align: center;
+        }
+
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* Booking Table */
+        table {
+            width: 100%;
+            border-spacing: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background: #f4f4f4;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        /* Home Link */
+        .home-link {
+            display: flex;
+            align-items: center;
+            text-decoration: underline;
+            color: #1E1E1E;
+            margin-bottom: 20px;
+        }
+
+        .home-link svg {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <div class="Film">
+                <svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
+            <a href="{{ url_for('user.logout') }}" style="text-decoration: none;">
+                <button class="logout-button">Logout</button>
+            </a>
+        </div>
+
+        <div class="divider"></div>
+
+        <a href="{{ url_for('public.home') }}" class="home-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Home
+        </a>
+
+        <!-- Flash Messages -->
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Display User Information -->
+        <h1>Welcome, {{ bookings[0].user_name }}</h1>
+        <p>Email: {{ bookings[0].user_email }}</p>
+        <hr>
+
+        <!-- Booking Information -->
+        <h2>Your Bookings</h2>
+        <!-- Booking Information -->
+        {% set record_count = 0 %}
+        <div class="vertical-tables">
+            {% for booking in bookings %}
+                {% if record_count % 5 == 0 %}
+                    {% if record_count > 0 %}
+                        </div>
+                    {% endif %}
+                    <div class="booking-record">
+                {% endif %}
+                    <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+                    <p><strong>Course Name:</strong> {{ booking.course_name }}</p>
+                    <p><strong>Price:</strong> {{ booking['Course.price'] }}</p>
+                    <p><strong>Status:</strong> {{ booking.status }}</p>
+                    <p><strong>Subscription Date:</strong> {{ booking.subscription_date }}</p>
+                    <p><strong>Special Requests:</strong> {{ booking['Subscriptions.special_requests'] }}</p>
+                    <hr> <!-- Optional: Adds a separator for each booking -->
+                {% set record_count = record_count + 1 %}
+            {% endfor %}
+        </div>
+        {% if record_count == 0 %}
+
+        {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

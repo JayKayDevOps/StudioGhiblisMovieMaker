@@ -11,10 +11,10 @@
             background-color: #f4f4f4;
             display: flex;
             justify-content: center;
-            align-items: flex-start; /* Changed from center to flex-start */
+            align-items: flex-start; 
             height: 100vh;
             margin: 0;
-            padding-top: 20px; /* Optional for extra spacing */
+            padding-top: 20px;
         }
     
         .admin-homepage {
@@ -68,9 +68,12 @@
             margin-bottom: 20px;
         }
     
-        table {
-            width: 100%;
-            border-spacing: 20px;
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Creates a 2x2 grid */
+            gap: 20px; /* Adds space between grid items */
+            max-width: 400px; /* Ensures the grid stays within the page width */
+            margin: 0 auto; /* Centers the grid */
         }
     
         .grid-item {
@@ -80,6 +83,12 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             padding: 20px;
+            height: 150px; /* Fixed height for uniformity */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 150px; /* Ensures consistent item width */
         }
     
         .grid-item:hover {
@@ -105,11 +114,9 @@
             margin-top: 10px;
         }
     </style>
-    
 </head>
 <body>
     <div class="admin-homepage">
-
         <div class="header">
             <div class="Film">
                 <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -125,35 +132,31 @@
         <div class="divider"></div>
 
         <div class="welcome-text">Welcome Admin!</div>
+        <p style="text-align: center;">We love anime and Studio Ghibli. Our mission is to share our enthusiasm through movie-making courses!</p>
 
-        <div>
-            <table>
-                <tr>
-                    <th class="grid-item">
-                        <a href="{{ url_for('admin.admin_users') }}">
-                            <div><span><i class="fas fa-users"></i></span><p>Users</p></div>
-                        </a>
-                    </th>
-                    <th class="grid-item">
-                        <a href="{{ url_for('admin.admin_bookings') }}">
-                            <div><span><i class="fas fa-calendar-alt"></i></span><p>Course Bookings</p></div>
-                        </a>
-                    </th>
-                </tr>
-                <tr>
-                    <th class="grid-item">
-                        <a href="{{ url_for('admin.list_courses') }}">
-                            <div><span><i class="fas fa-video"></i></span><p>Course List</p></div>
-                        </a>
-                    </th>
-                    <th class="grid-item">
-                        <a href="/AdminCreateCourse">
-                            <div><span><i class="far fa-plus-square"></i></span><p>Create New Course </p></div>
-                        </a>
-                    </th>
-                </tr>
-            </table>
+        <div class="grid-container">
+            <div class="grid-item">
+                <a href="{{ url_for('admin.admin_users') }}">
+                    <div><span><i class="fas fa-users"></i></span><p>Users</p></div>
+                </a>
+            </div>
+            <div class="grid-item">
+                <a href="{{ url_for('admin.admin_bookings') }}">
+                    <div><span><i class="fas fa-calendar-alt"></i></span><p>Course Bookings</p></div>
+                </a>
+            </div>
+            <div class="grid-item">
+                <a href="{{ url_for('admin.list_courses') }}">
+                    <div><span><i class="fas fa-video"></i></span><p>Course List</p></div>
+                </a>
+            </div>
+            <div class="grid-item">
+                <a href="{{ url_for('admin.create_course') }}">
+                    <div><span><i class="far fa-plus-square"></i></span><p>Create New Course</p></div>
+                </a>
+            </div>
         </div>
     </div>
 </body>
 </html>
+
