@@ -1,17 +1,24 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Flask Seervice'
+Description: 'Flask Service'
 
- FlaskAppService:
+Parameters:
+  TaskDefinitionArn:
+    Type: String
+    Description: ARN of the ECS Task Definition
+
+Resources:
+  FlaskAppService:
     Type: 'AWS::ECS::Service'
     Properties:
-      Cluster: !ImportValue MyECSClusterName  # Ensure MyECSClusterName is exported correctly
+      Cluster: !ImportValue MyECSClusterName
       TaskDefinition: !Ref TaskDefinitionArn
       DesiredCount: 2
       LaunchType: 'FARGATE'
       NetworkConfiguration:
         AwsvpcConfiguration:
           Subnets:
-            - !ImportValue PublicSubnetId  # Ensure PublicSubnetId is exported correctly
+            - !ImportValue PublicSubnetId
           SecurityGroups:
             - !ImportValue MySecurityGroup
           AssignPublicIp: 'ENABLED'
+
