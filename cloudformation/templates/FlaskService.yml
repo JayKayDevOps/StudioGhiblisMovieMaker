@@ -1,0 +1,17 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Flask Seervice'
+
+ FlaskAppService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !ImportValue MyECSClusterName  # Ensure MyECSClusterName is exported correctly
+      TaskDefinition: !Ref TaskDefinitionArn
+      DesiredCount: 2
+      LaunchType: 'FARGATE'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !ImportValue PublicSubnetId  # Ensure PublicSubnetId is exported correctly
+          SecurityGroups:
+            - !ImportValue MySecurityGroup
+          AssignPublicIp: 'ENABLED'
