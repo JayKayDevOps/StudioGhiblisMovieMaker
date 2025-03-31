@@ -150,6 +150,18 @@ Resources:
           ToPort: 5432
           CidrIp: '0.0.0.0/0'
 
+
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow HTTP access to Flask app'
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 5000
+          ToPort: 5000
+          CidrIp: '0.0.0.0/0'
+
   MyTaskExecutionRole:
     Type: 'AWS::IAM::Role'
     Properties:
@@ -161,25 +173,37 @@ Resources:
               Service: 'ecs-tasks.amazonaws.com'
             Action: 'sts:AssumeRole'
       Policies:
-        - PolicyName: 'ECRAccessPolicy'
+        - PolicyName: 'ECSAccessPolicy'
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: 'Allow'
                 Action:
+                  # ECS Service Operations
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                  - 'ecs:CreateService'
+                  - 'ecs:ListServices'
+                  - 'ecs:DescribeTaskDefinition'
+                  - 'ecs:RegisterTaskDefinition'
+                  - 'ecs:DeregisterTaskDefinition'
+                  - 'ecs:DescribeTasks'
+                  - 'ecs:StartTask'
+                  - 'ecs:StopTask'
+                  - 'ecs:RunTask'
+                  # ECR Access (for fetching/pushing images)
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
                   - 'ecr:GetDownloadUrlForLayer'
                   - 'ecr:BatchGetImage'
-                  - 'ecr:BatchCheckLayerAvailability'
                   - 'ecr:PutImage'
-                  - 'ecr:InitiateLayerUpload'
-                  - 'ecr:UploadLayerPart'
-                  - 'ecr:CompleteLayerUpload'
                   - 'ecr:ListImages'
-                  - 'ecr:GetAuthorizationToken'
+                  # CloudWatch Logs (for ECS task logging)
                   - 'logs:CreateLogGroup'
                   - 'logs:CreateLogStream'
                   - 'logs:PutLogEvents'
-                  - 'logs:DescribeLogStreams'
+                  # secrets
+                  - 'secretsmanager:GetSecretValue'
                 Resource: '*'
 
 Outputs:
@@ -226,3 +250,8 @@ Outputs:
     Value: !GetAtt MyTaskExecutionRole.Arn
     Export:
       Name: MyTaskExecutionRoleExportName
+  MySecurityGroup:
+    Description: "Security group for Flask"
+    Value: !Ref MySecurityGroup
+    Export:
+      Name: MySecurityGroup

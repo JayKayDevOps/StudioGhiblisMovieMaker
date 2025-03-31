@@ -1,0 +1,55 @@
+{
+  "family": "flask-app-task",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "TaskExecutionRoleArn",
+  "taskRoleArn": "MyTaskExecutionRoleExportName",
+  "containerDefinitions": [
+    {
+      "name": "flask-app-container",
+      "image": "ECRRepositoryURI",
+      "portMappings": [
+        {
+          "containerPort": 5000,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/flask-app-service",
+          "awslogs-region": "AWS_REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "environment": [
+        {
+          "name": "FLASK_ENV",
+          "value": "FlaskEnv"
+        },
+        {
+          "name": "DB_USER",
+          "value": "DB_Admin"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "DB_PASSWORD"
+        },
+        {
+          "name": "DB_HOST",
+          "value": "RDSInstanceEndpoint"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "moviemaking_dev"
+        }
+      ]
+    }
+  ]
+}
