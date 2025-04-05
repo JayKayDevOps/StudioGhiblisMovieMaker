@@ -1,7 +1,6 @@
 import logging
-from flask import Blueprint, render_template, request, render_template, redirect, url_for
-from app.services.admin_service import AdminService
-from app.models import User 
+from flask import Blueprint, render_template, request, render_template, redirect, url_for, jsonify ,flash
+from app.models import User
 from app.services.admin_service import AdminService
 from app.utils.decorators import role_required
 
@@ -66,24 +65,38 @@ def admin_home():
 
 @admin_bp.route('/admin/bookings', methods=['GET'])
 @role_required('admin')
-def admin_get_all_bookings():
+def admin_bookings():
     """Fetch and render all course bookings."""
     try:
         admin_service = AdminService()
-        bookings = admin_service.get_all_bookings()
+        
+        # Get course ID from query parameters
+        course_id = request.args.get('course_id', type=int)
+        
+        if course_id:
+            # Fetch bookings for the specific course ID
+            logger.info(f"Fetching bookings for Course ID: {course_id}")
+            bookings = admin_service.get_bookings_by_course(course_id)
+        else:
+            # Fetch all bookings
+            logger.info("Fetching all bookings.")
+            bookings = admin_service.get_all_bookings()
+        
         if not bookings:
-            logger.warning("No bookings found.")
+            logger.warning(f"No bookings found{' for Course ID: ' + str(course_id) if course_id else ''}.")
             return render_template("AdminBookings.html", bookings=[])
-        logger.info(f"Successfully fetched {len(bookings)} bookings.")
+        
+        logger.info(f"Successfully fetched {len(bookings)} bookings{' for Course ID: ' + str(course_id) if course_id else ''}.")
         return render_template("AdminBookings.html", bookings=bookings)
+    
     except Exception as e:
         logger.error(f"Error fetching bookings: {e}", exc_info=True)
-        return render_template(error_template, error_message="Failed to load bookings.")
+        return render_template("error.html", error_message="Failed to load bookings.")
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
 @role_required('admin')
-def admin_get_all_users():
+def admin_users():
     """Fetch and render all users."""
     try:
         admin_service = AdminService()
@@ -100,7 +113,7 @@ def admin_get_all_users():
 
 @admin_bp.route('/admin/courses', methods=['GET'])
 @role_required('admin')
-def admin_get_all_courses():
+def list_courses():
     """Fetch and render all courses."""
     try:
         admin_service = AdminService()
@@ -142,18 +155,34 @@ def update_booking(booking_id):
         logger.error(f"Failed to update booking with ID {booking_id}: {e}", exc_info=True)
         return render_template(error_template, error_message="Failed to load bookings"), 500
 
+@admin_bp.route('/admin/update-subscription/<int:booking_id>', methods=['POST'])
+def update_subscription(booking_id):
+    admin_service = AdminService()
+    form_data = request.form
+    updated_subscription = admin_service.update_booking(booking_id, **form_data)
+    if updated_subscription:
+        return redirect(url_for('admin.admin_bookings'))
+    else:
+        return "Subscription not found", 404
+
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['DELETE'])
 @role_required('admin')
 def delete_booking(booking_id):
-    """Delete a booking by its ID."""
-    raise not_implemented
+    """
+    Route to delete a subscription (booking).
+    """
     try:
-        logger.info(f"Deleting booking with ID: {booking_id}")
-        # Add logic to delete the booking
-        return f"Booking {booking_id} deleted successfully."
+        # Call the delete_booking method in the service
+        admin_service.delete_booking(booking_id)
+        
+        # Redirect to the admin bookings page on success
+        return redirect(url_for('admin.admin_bookings'))
+    except ValueError as e:
+        # Handle case where booking is not found
+        return jsonify({"success": False, "message": str(e)}), 404
     except Exception as e:
-        logger.error(f"Failed to delete booking with ID {booking_id}: {e}", exc_info=True)
-        return render_template(error_template, error_message="Failed to delete booking"), 500
+        # Handle unexpected errors
+        return jsonify({"success": False, "message": "An error occurred."}), 500
 
 
 # Create a new course
@@ -214,3 +243,101 @@ def delete_course(course_id):
     except Exception as e:
         logger.error(f"Failed to delete course {course_id}: {e}", exc_info=True)
         return render_template(error_template, error_message="Failed to delete course"), 500
+
+
+# Create a new course
+@admin_bp.route('/admin/create-course')
+def create_course():
+    return render_template('AdminCreateCourse.html')
+
+@admin_bp.route('/admin/add-course', methods=['POST'])
+def add_course():
+    """
+    Route to add a new course.
+    """
+    admin_service = AdminService()
+
+    # Collect course data
+    course_name = request.form.get('name')
+    course_description = request.form.get('description')
+    course_price = request.form.get('price')
+
+    # Validation: Ensure course details are valid
+    if not course_name:
+        flash("Course name is required!", "error")
+        return redirect(url_for('admin.create_course'))
+
+    # Prepare course data
+    course_data = {
+        'name': course_name,
+        'description': course_description,
+        'price': float(course_price) if course_price else 0.0
+    }
+
+    # Save the course in the database
+    course_id = admin_service.add_course(course_data)
+
+    if course_id:
+        flash("Course added successfully! Now you can add modules to the course.", "success")
+        # Redirect to the module addition page with the newly created course ID
+        return redirect(url_for('admin.create_course', course_id=course_id))
+    else:
+        flash("An error occurred while adding the course. Please try again.", "error")
+        return redirect(url_for('admin.create_course'))
+    
+    
+@admin_bp.route('/admin/add-modules', methods=['POST'])
+def add_modules():
+    """
+    Route to add modules to an existing course.
+    """
+    admin_service = AdminService()
+
+    # Collect course ID and module data
+    course_id = request.form.get('course_id')
+    module_titles = request.form.getlist('module_titles[]')
+    module_descriptions = request.form.getlist('module_descriptions[]')
+
+    # Validation: Ensure course ID and modules are valid
+    if not course_id:
+        flash("You must select a course before adding modules!", "error")
+        return redirect(url_for('admin.create_course'))
+
+    if not module_titles or len(module_titles) == 0 or all(title.strip() == "" for title in module_titles):
+        flash("At least one module is required with a valid title!", "error")
+        return redirect(url_for('admin.reate_course', course_id=course_id))
+
+    # Prepare module data
+    module_data = [
+        {'title': title.strip(), 'description': description.strip()}
+        for title, description in zip(module_titles, module_descriptions)
+        if title.strip()
+    ]
+
+    # Add modules to the course
+    success = admin_service.add_modules_to_course(course_id, module_data)
+
+    if success:
+        flash("Modules added successfully!", "success")
+        return redirect(url_for('admin.list_courses'))
+    else:
+        flash("An error occurred while adding the modules. Please try again.", "error")
+        return redirect(url_for('admin.create_course', course_id=course_id))
+ 
+
+
+@admin_bp.route('/admin/get-courses', methods=['GET'])
+def get_courses():
+    """
+    Fetch all courses as JSON to populate the dropdown.
+    """
+    admin_service = AdminService()
+
+    # Fetch all courses
+    courses = admin_service.get_all_courses()
+
+    # Return courses as JSON
+    if courses:
+        return jsonify({'courses': courses})
+    else:
+        return jsonify({'courses': []}), 404
