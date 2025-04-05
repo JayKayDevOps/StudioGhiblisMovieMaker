@@ -2,21 +2,25 @@
 
 import pytest
 from app import create_app
-from app.models import db  
+from app.models import db
 
 @pytest.fixture(scope="function")
-# ✅ Use function scope for this fixture
 def app():
     """Creates a Flask app configured for testing with in-memory DB."""
     app = create_app("testing")
 
+    # Setup without maintaining context
     with app.app_context():
-        db.drop_all()    # Ensure clean slate
-        db.create_all()  # Create tables in-memory before any tests
-        yield app
+        db.drop_all()
+        db.create_all()
 
-        db.drop_all()    # Clean up after all tests are done
-        db.session.remove() # Explicitly close DB connection
+    # Yield outside any context
+    yield app
+
+    # Cleanup
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
 
 
 @pytest.fixture()

@@ -1,5 +1,4 @@
-import os
-import subprocess
+
 import logging  # Import logging module
 from flask import Flask
 from flask_login import LoginManager

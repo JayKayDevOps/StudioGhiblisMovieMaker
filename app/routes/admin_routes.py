@@ -245,11 +245,6 @@ def delete_course(course_id):
         return render_template(error_template, error_message="Failed to delete course"), 500
 
 
-# Create a new course
-@admin_bp.route('/admin/create-course')
-def create_course():
-    return render_template('AdminCreateCourse.html')
-
 @admin_bp.route('/admin/add-course', methods=['POST'])
 def add_course():
     """

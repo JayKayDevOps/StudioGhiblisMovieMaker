@@ -68,7 +68,6 @@ def test_get_all_bookings(admin_service, app):
         assert booking["subscription_date"] == "2024-01-01 12:00:00"
 
 def test_delete_booking_success(admin_service, app):
-
     with app.app_context():
         # Arrange
         user = User(first_name="Test", second_name="User", email="del@example.com")
@@ -88,11 +87,18 @@ def test_delete_booking_success(admin_service, app):
         assert result is True
         assert db.session.get(Subscriptions, sub.id) is None
 
+def test_update_booking_status_not_found(admin_service, app):
+    """Test updating status for a non-existent booking."""
+    with app.app_context():
+        # Arrange
+        non_existent_id = 9999  # An ID that doesn't exist
 
-def test_update_booking_status_not_found(admin_service):
-    with pytest.raises(RuntimeError) as exc_info:
-        admin_service.update_booking_status(9999, "confirmed")
-    assert "Error updating booking status" in str(exc_info.value)
+        # Act and Assert
+        with pytest.raises(ValueError) as excinfo:
+            admin_service.update_booking_status(non_existent_id, "confirmed")
+
+        # Verify the error message
+        assert f"No booking found for ID: {non_existent_id}" in str(excinfo.value)
 
 
 
@@ -117,11 +123,18 @@ def test_update_booking_status_success(admin_service, app):
         assert success is True
         assert booking.status == "confirmed"
 
+def test_delete_booking_not_found(app):
+    with app.app_context():
+        # Arrange
+        admin_service = AdminService()
+        non_existent_id = 12345  # An ID that doesn't exist
 
-def test_delete_booking_not_found(admin_service):
-    with pytest.raises(RuntimeError) as exc_info:
-        admin_service.delete_booking(12345)
-    assert "Error deleting booking" in str(exc_info.value)
+        # Act and Assert
+        with pytest.raises(ValueError) as exc_info:
+            admin_service.delete_booking(non_existent_id)
+
+        # Verify the error message
+        assert f"Booking with ID {non_existent_id} not found" in str(exc_info.value)
 
 def test_get_all_course_details(admin_service, app):
     with app.app_context():
@@ -153,6 +166,7 @@ def test_get_all_course_details(admin_service, app):
 
 def test_update_booking_success(admin_service, app):
     with app.app_context():
+        # Arrange
         user = User(first_name="Edit", second_name="Test", email="edit@example.com")
         user.set_password("test123")
         course = Course(name="Editing Course", description="...", price=100)
@@ -164,19 +178,32 @@ def test_update_booking_success(admin_service, app):
         db.session.commit()
 
         # Act
-        result = admin_service.update_booking(booking.id, new_status="confirmed", special_requests="New notes")
+        updated_booking = admin_service.update_booking(booking.id, status="confirmed", special_requests="New notes")
 
         # Assert
-        assert result is True
-        updated = db.session.get(Subscriptions, booking.id)
-        assert updated.status == "confirmed"
-        assert updated.special_requests == "New notes"
+        assert updated_booking is not None
+        assert updated_booking.id == booking.id
+        assert updated_booking.status == "confirmed"
+        assert updated_booking.special_requests == "New notes"
 
+        # Optionally verify the database has the updated values
+        db_booking = db.session.get(Subscriptions, booking.id)
+        assert db_booking.status == "confirmed"
+        assert db_booking.special_requests == "New notes"
 
-def test_update_booking_not_found(admin_service):
-    with pytest.raises(RuntimeError) as e:
-        admin_service.update_booking(9999, new_status="confirmed")
-    assert "Error updating booking" in str(e.value)
+def test_update_booking_not_found(app):
+    with app.app_context():
+        # Arrange
+        admin_service = AdminService()
+        non_existent_id = 9999  # An ID that doesn't exist
+
+        # Act and Assert
+        with pytest.raises(ValueError) as e:
+            admin_service.update_booking(non_existent_id, new_status="confirmed")
+
+        # Verify the error message
+        assert f"Booking with ID {non_existent_id} not found" in str(e.value)
+
 
 def test_create_course_success(admin_service, app):
     with app.app_context():
