@@ -1,4 +1,4 @@
-### DAST Tools: how to use them
+### SAST Tools: how to use them
 
 ##### installation
 The tools are in requirements.txt, so re-run pip install:
@@ -48,3 +48,4 @@ def _add_security_headers(response):
     )
     return response
 ```
+

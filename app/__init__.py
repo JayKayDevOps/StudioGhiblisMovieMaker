@@ -28,24 +28,25 @@ logger = logging.getLogger(__name__)
 secure_headers = Secure.with_default_headers()
 
 
+def _add_security_headers(response):
+    """ add security headers, allow external assets for Bootstrap, jQuery, Font Awesome"""
+    secure_headers.set_headers(response)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "style-src 'self' 'unsafe-inline' https://maxcdn.bootstrapcdn.com https://cdnjs.cloudflare.com https://code.jquery.com https://kit.fontawesome.com;"
+        "script-src 'self' 'unsafe-inline'  https://code.jquery.com https://cdnjs.cloudflare.com https://kit.fontawesome.com; "
+        #"img-src 'self' https://placehold.co; "
+        "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com; "
+        "connect-src 'self' https://ka-f.fontawesome.com; "  # for JS requests e.g. fetch, XHR, WebSockets
+    )
+    return response
+
+
 def create_app(env="development"):
     """Application factory for creating and configuring the Flask app."""
     
     app = Flask(__name__)
     app.config.from_object(config[env])
-
-    def _add_security_headers(response):
-        """ add security headers, allow external assets for Bootstrap, jQuery, Font Awesome"""
-        secure_headers.set_headers(response)
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; "
-            "style-src 'self' 'unsafe-inline' https://maxcdn.bootstrapcdn.com https://cdnjs.cloudflare.com https://code.jquery.com https://kit.fontawesome.com;"
-            "script-src 'self' 'unsafe-inline'  https://code.jquery.com https://cdnjs.cloudflare.com https://kit.fontawesome.com; "
-            "img-src 'self' https://placehold.co; "
-            "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com; " 
-            "connect-src 'self' https://ka-f.fontawesome.com; "
-        )
-        return response
 
     app.after_request(_add_security_headers)
 
