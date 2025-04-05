@@ -92,6 +92,6 @@ config = {
     "testing": TestingConfig,
 }
 # Dynamically load the configuration
-flask_env = os.getenv("FLASK_ENV", "development2")
+flask_env = os.getenv("FLASK_ENV", "development")
 selected_config = config.get(flask_env, DevelopmentConfig2)
 print(f"Using configuration: {selected_config.__name__}")
