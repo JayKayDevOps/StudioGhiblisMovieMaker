@@ -17,7 +17,7 @@ def test_get_all_users(app):
         user1 = User(first_name="Test", second_name="User1", email="user1@example.com", role="customer")
         user1.set_password("password123")  # ✅ Fix: Set password
 
-        user2 = User(first_name="Test", second_name="User2", email="user2@example.com", role="admin")
+        user2 = User(first_name="Test", second_name="User2", email="user2@example.com", role="customer")
         user2.set_password("password123")  # ✅ Fix: Set password
 
         db.session.add_all([user1, user2])
@@ -30,7 +30,7 @@ def test_get_all_users(app):
         # Assert: Verify the output
         assert len(users) == 2
         assert users[0]["email"] == "user1@example.com"
-        assert users[1]["role"] == "admin"
+        assert users[1]["role"] == "customer"
 
 
 def test_get_all_bookings(admin_service, app):

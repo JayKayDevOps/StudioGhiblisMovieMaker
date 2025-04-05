@@ -1,7 +1,8 @@
 import logging
 from app.models import db, Subscriptions, User, Course
 from app.services.user_service import UserService
-from flask import Blueprint, request, render_template, redirect, url_for, flash ,session 
+from flask import Blueprint, request, render_template, redirect, url_for, flash ,session
+from flask_login import login_user, logout_user, current_user
 
 from app.utils.decorators import role_required
 
@@ -9,6 +10,7 @@ from app.utils.decorators import role_required
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
+
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler()  # Ensure logs are sent to stdout for CloudWatch
@@ -23,11 +25,6 @@ user_id = 1 # mocked for now
 
 user_bp = Blueprint('user', __name__)
 
-@user_bp.route('/dashboard')
-@role_required('user')
-def dashboard():
-    raise not_implemented
-
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
     """Handle user login."""
@@ -41,24 +38,41 @@ def login():
             return render_template("UserLogin.html", error="Email and password are required.")
 
         try:
-            # Query the database for an user
+            # Query the database for a user
+            print('email: ', email)
+            print('password: ', password)
+            print('\n\n')
             user = User.query.filter_by(email=email).first()
+            print(user)
+
 
             # Validate password
             if user and user.check_password(password):
+                # Use Flask-Login's login_user instead of session
+                login_user(user)
+
                 logger.info(f"User login successful for email: {email}")
-                session['user_id'] = user.id  # Store user's ID in the session
-                return redirect(url_for('public.home'))
+
+                # Redirect based on role
+                if user.role == 'admin':
+                    return redirect(url_for('admin.admin_home'))
+
+                else:
+                    # Default for users with no specific role
+                    return redirect(url_for('user.view_bookings'))
             else:
                 logger.warning(f"Login attempt failed for email: {email}")
                 return render_template("UserLogin.html", error="Invalid email or password.")
         except Exception as e:
             logger.error(f"Error during login process: {e}", exc_info=True)
+            print('rendering error template:')
             return render_template("error.html", error_message="Unexpected error occurred during login.")
 
     return render_template("UserLogin.html")
 
+
 @user_bp.route('/booking', methods=['GET', 'POST'])
+@role_required('customer')
 def booking():
     course = None
     user_service = UserService()  
@@ -124,6 +138,7 @@ def booking():
 
 
 @user_bp.route('/book_course/<int:course_id>', methods=['GET', 'POST'])
+@role_required('customer')
 def booking_confirmation(course_id):
     if request.method == 'GET':
         course = Course.query.get(course_id)  # Fetch the course from the database
@@ -133,6 +148,7 @@ def booking_confirmation(course_id):
     return render_template('BookingConfirmation.html', course=course)
 
 @user_bp.route('/register', methods=['GET', 'POST'])
+@role_required('customer')
 def register():
     """
     Handle user registration. Prevent logged-in users from accessing the registration page.
@@ -150,7 +166,8 @@ def register():
     return render_template("Register.html")
 
 
-@user_bp.route('/mybookings', methods=['GET'])
+@user_bp.route('/my_bookings', methods=['GET'])
+@role_required('customer')
 def view_bookings():
     # Get the logged-in user's ID from the session
     user_id = session.get('user_id')
@@ -175,6 +192,7 @@ def view_bookings():
 
 
 @user_bp.route('/update/<int:user_id>', methods=['POST'])
+@role_required('customer')
 def update_user(user_id):
     user_service = UserService()  # Initialize the UserService
     
@@ -215,6 +233,7 @@ def update_user(user_id):
     
     
 @user_bp.route('/create', methods=['POST'])
+@role_required('customer')
 def create_user():
     user_service = UserService()  # Initialize the UserService
 
@@ -261,13 +280,14 @@ def create_user():
 
 @user_bp.route('/logout')
 def logout():
-    # Clear the session to log the user out
-    session.clear()
-    # Optionally redirect the user to the login or homepage
-    return render_template('Homepage.html')    
+    if current_user.is_authenticated:
+        logger.info(f"Admin logged out: {current_user.email}")
+        logout_user()
+        flash("You have been logged out successfully.", "success")
+    return redirect(url_for('public.home'))
 
 @user_bp.route('/book-course/<int:course_id>', methods=['POST'])
-@role_required('user')
+@role_required('customer')
 def book_course():
     try:
         course_id = int(request.form.get('course_id'))
@@ -283,7 +303,7 @@ def book_course():
         return render_template(error_template, error_message="Failed to book course."), 500
 
 @user_bp.route('/my-courses')
-@role_required('user')
+@role_required('customer')
 def my_courses():
     try:
         bookings = user_service.get_user_bookings(user_id)

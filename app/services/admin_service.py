@@ -67,7 +67,7 @@ class AdminService:
                 User.second_name,
                 User.email,
                 User.role
-            ).all()
+            ).filter(User.role!='admin').all()
 
             # Log count instead of full data to avoid exposing sensitive information
             logger.debug(f"Fetched {len(users)} users")

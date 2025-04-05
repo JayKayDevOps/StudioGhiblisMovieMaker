@@ -45,13 +45,17 @@ def seed_database():
             User(first_name="Hayao", second_name="Miyazaki", email="miyazaki@example.com"),
             User(first_name="Isao", second_name="Takahata", email="takahata@example.com"),
             User(first_name="Yoshifumi", second_name="Kondō", email="kondo@example.com"),
-            User(first_name="Hiromasa", second_name="Yonebayashi", email="yonebayashi@example.com")
+            User(first_name="Hiromasa", second_name="Yonebayashi", email="yonebayashi@example.com"),
+            User(first_name="Hiromasa", second_name="Yonebayashi", email="test@example.com")
         ]
         for user in users:
-            user.set_password("password123")
+            user.set_password("pass123")
 
         db.session.add(admin)
         db.session.add_all(users)
+        # for user in users:
+        #     db.session.add(user)
+        #     print(user,  " saved to database.")
         db.session.commit()  # ✅ Commit so IDs are assigned
 
         print("✅ Users added.")
