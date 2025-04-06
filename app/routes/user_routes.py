@@ -76,57 +76,72 @@ def login():
 @user_bp.route('/booking', methods=['GET', 'POST'])
 @role_required('customer')
 def booking():
+
+    print('in booking\n\n\n\n\n')
     course = None
 
+    # Handle GET Requests
     if request.method == 'GET':
-        # Handle GET request for course_id or course_name
-        course_id = request.args.get('course_id')
-        course_name = request.args.get('course_name')
-        print(course)  # Check if course.id exists
+        print('in GET request')
+        print(request.args)
+        print(request.form)
+        # Get course_id or course_name from the query parameters
+        course_id = request.form.get('course_id')
+        course_name = request.form.get('course_name')
 
+        print('course_id: ', course_id)
+        print('course_name: ', course_name)
         if course_id:
             # Query the course by course_id
             course = Course.query.get(course_id)
         elif course_name:
             # Query the course by course_name
             course = Course.query.filter_by(name=course_name).first()
-        else:
-            # Neither course_id nor course_name provided
-            return render_template("error.html", error_message="No course information provided. Please try again.")
 
+        # Handle cases where the course is not found
         if not course:
-            # Handle case where course is not found
-            return render_template("error.html", error_message="Course not found. Please try again.")
+            return render_template("error.html",
+                                   error_message="No course information provided or course not found. Please try again.")
 
-        # Render the booking confirmation page with the found course
+        # Render booking confirmation page with the found course details
         return render_template("BookingConfirmation.html", course=course, course_id=course.id)
-    
 
+    # Handle POST Requests
     elif request.method == 'POST':
         # Retrieve course_id from the form data
         course_id = request.form.get('course_id')
-        course = Course.query.get(course_id) if course_id else None
+        special_requests = request.form.get('special_requests', None)
 
+        if not course_id:
+            flash('No course selected. Please try again.', 'error')
+            return redirect(url_for('user.booking'))
+
+        # Query the course by course_id
+        course = Course.query.get(course_id)
+
+        # Validate the course exists
+        if not course:
+            flash('Invalid course selected. Please try again.', 'error')
+            return redirect(url_for('user.booking'))
+
+        # Get the current user ID from the session
         current_user_id = session.get('user_id')
 
-
-         # Call the service to book the course
-        special_requests = request.form.get('special_requests', None)
+        # Call the booking service to book the course
         booking_successful = user_service.book_course(
             user_id=current_user_id,
             course_id=course_id,
             special_requests=special_requests
         )
 
+        # Flash messages for success or failure
         if booking_successful:
             flash('Success! Booking confirmed. Go to your profile page to see details.', 'success')
-            booking_confirmation = True
         else:
-            flash('This course is already booked.', 'error')
+            flash('This course is already booked or another issue occurred.', 'error')
 
-
-    # Redirect to the user's bookings page
-    return redirect(url_for('user.view_bookings'))
+        # Redirect to user's bookings page after handling the booking
+        return redirect(url_for('user.view_bookings'))
 
   
 

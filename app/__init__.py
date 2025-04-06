@@ -1,6 +1,6 @@
 
 import logging  # Import logging module
-from flask import Flask, session
+from flask import Flask, session, redirect, url_for
 from flask_login import LoginManager
 from sqlalchemy import text, inspect
 
@@ -75,6 +75,10 @@ def create_app(env="development"):
         from flask import session
         return {'user_id': session.get('user_id')}
 
+    @app.route('/')
+    def index_redirect():
+        # Redirect the root URL "/" to "public.home"
+        return redirect(url_for('public.home'))
 
     logger.info("Flask-Login initialized")
 
