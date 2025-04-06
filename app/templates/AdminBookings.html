@@ -99,7 +99,9 @@
         <!-- Header -->
         <div class="header">
             <h1>Admin - Bookings</h1>
-            <div class="button">Logout</div>
+            <a href="{{ url_for('admin.admin_logout') }}">
+                <button class="logout-button">Logout</button>
+            </a>
         </div>
         <div class="line"></div>
 

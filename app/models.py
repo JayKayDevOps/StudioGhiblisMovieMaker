@@ -14,7 +14,7 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.Enum('customer', 'admin', name='user_role'), default='customer', nullable=False)
-    role = db.Column(db.Enum('customer', 'admin', name='user_role'), default='customer', nullable=False)
+
 
     def set_password(self, password):
         """Hashes password before storing it."""

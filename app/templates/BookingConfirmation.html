@@ -125,7 +125,33 @@
         .error {
         color: red;
         font-weight: bold;
-}
+        }
+        .InputGroup {
+            margin-bottom: 20px; /* Add space between input groups */
+        }
+
+        .InputLabel {
+            display: block;        /* Makes the label appear on its own line above the field */
+            margin-bottom: 5px;    /* Add spacing between the label and the textarea */
+            font-weight: bold;     /* Makes the label stand out */
+            font-size: 14px;       /* Adjust font size for clarity */
+        }
+
+        .InputBox {
+            width: 100%;           /* Make textarea stretch to full container width */
+            min-height: 120px;     /* Ensure it's visually larger */
+            padding: 10px;         /* Add internal spacing for better UX */
+            border: 1px solid #ccc; /* Light border for clarity */
+            border-radius: 4px;    /* Rounded corners for a modern design */
+            font-size: 14px;       /* Match font size with the inputs */
+            font-family: Arial, sans-serif; /* Keep the font consistent with the label */
+            resize: vertical;      /* Allow vertical resizing only */
+        }
+
+        .InputBox:focus {
+            border-color: #007bff; /* Highlight border when focused */
+            outline: none;         /* Remove default outline */
+        }
 
     </style>
 </head>
@@ -168,18 +194,20 @@
         <!-- Authenticate login details and confirm Section -->
         <form id="ConfirmForm" action="/user/booking" method="POST" class="FormLogIn">
             <input type="hidden" name="course_id" value="{{ course_id }}">
-            <div class="InputField">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" class="Input" placeholder="Enter your email" required>
-            </div>
-            <div class="InputField">
-                <label for="password">Password</label>
-                <input id="password" type="password" name="password" class="Input" placeholder="Enter your password" required>
-            </div>
-            <div class="InputGroup">
-                <label for="Special_Requests">Special Requests</label>
-                <input type="text" id="Special_Requests" name="special_requests" class="InputBox">
-            </div>
+{#            <div class="InputField">#}
+{#                <label for="email">Email Address</label>#}
+{#                <input type="email" id="email" name="email" class="Input" placeholder="Enter your email" required>#}
+{#            </div>#}
+{#            <div class="InputField">#}
+{#                <label for="password">Password</label>#}
+{#                <input id="password" type="password" name="password" class="Input" placeholder="Enter your password" required>#}
+{#            </div>#}
+        <div class="InputGroup">
+            <label for="Special_Requests" class="InputLabel">Special Requests</label>
+            <textarea id="Special_Requests" name="special_requests" class="InputBox" rows="5" cols="40"
+                placeholder="Enter any special requests..."></textarea>
+        </div>
+
     
             <!-- Booking Confirmation Section -->
             {% if course %}

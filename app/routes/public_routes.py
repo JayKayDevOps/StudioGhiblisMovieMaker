@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, request, render_template 
+from flask import Blueprint, request, render_template
 from app.models import Course
 from app.services.public_service import PublicService
 
@@ -42,10 +42,10 @@ def search_courses():
                 query = query.filter(Course.price.ilike(f"%{price}%"))
             if keywords:
                 query = query.filter(
-                    (Course.name.ilike(f"%{keywords}%")) | 
+                    (Course.name.ilike(f"%{keywords}%")) |
                     (Course.description.ilike(f"%{keywords}%"))
                 )
-            
+
             # Execute query and fetch results
             try:
                 results = query.all()  # Only fetch results if conditions exist

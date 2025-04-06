@@ -1,12 +1,18 @@
 import logging
+
+import app
 from app.models import db, Subscriptions, User, Course
 from app.services.user_service import UserService
-from flask import Blueprint, request, render_template, redirect, url_for, flash ,session 
+from flask import Blueprint, request, render_template, redirect, url_for, flash ,session
+from flask_login import login_user, logout_user, current_user
+
+from app.utils.decorators import role_required
 
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
+
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
         logging.StreamHandler()  # Ensure logs are sent to stdout for CloudWatch
@@ -17,13 +23,8 @@ logger = logging.getLogger(__name__)
 error_template = "error.html"
 not_implemented = NotImplementedError("Implement this logic")
 user_service = UserService()
-user_id = 1 # mocked for now 
 
 user_bp = Blueprint('user', __name__)
-
-@user_bp.route('/dashboard')
-def dashboard():
-    raise not_implemented
 
 @user_bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -38,89 +39,112 @@ def login():
             return render_template("UserLogin.html", error="Email and password are required.")
 
         try:
-            # Query the database for an user
+            # Query the database for a user
+            print('email: ', email)
+            print('password: ', password)
+            print('\n\n')
             user = User.query.filter_by(email=email).first()
+            print(user)
+
 
             # Validate password
             if user and user.check_password(password):
+                # Use Flask-Login's login_user instead of session
+                login_user(user)
+
                 logger.info(f"User login successful for email: {email}")
-                session['user_id'] = user.id  # Store user's ID in the session
-                return redirect(url_for('public.home'))
+
+                # Redirect based on role
+                if user.role == 'admin':
+                    return redirect(url_for('admin.admin_home'))
+
+                else:
+                    # Default for users with no specific role
+                    session['user_id'] = user.id
+                    return redirect(url_for('user.view_bookings'))
             else:
                 logger.warning(f"Login attempt failed for email: {email}")
                 return render_template("UserLogin.html", error="Invalid email or password.")
         except Exception as e:
             logger.error(f"Error during login process: {e}", exc_info=True)
+            print('rendering error template:')
             return render_template("error.html", error_message="Unexpected error occurred during login.")
 
     return render_template("UserLogin.html")
 
+
 @user_bp.route('/booking', methods=['GET', 'POST'])
+@role_required('customer')
 def booking():
     course = None
-    user_service = UserService()  
 
+    # Handle GET Requests
     if request.method == 'GET':
-        # Handle GET request for course_id or course_name
+        print('in GET request')
+        print(request.args)
+        # Get course_id or course_name from the query parameters
         course_id = request.args.get('course_id')
         course_name = request.args.get('course_name')
-        print(course)  # Check if course.id exists
 
+        print('course_id: ', course_id)
+        print('course_name: ', course_name)
         if course_id:
             # Query the course by course_id
             course = Course.query.get(course_id)
         elif course_name:
             # Query the course by course_name
             course = Course.query.filter_by(name=course_name).first()
-        else:
-            # Neither course_id nor course_name provided
-            return render_template("error.html", error_message="No course information provided. Please try again.")
 
+        # Handle cases where the course is not found
         if not course:
-            # Handle case where course is not found
-            return render_template("error.html", error_message="Course not found. Please try again.")
+            return render_template("error.html",
+                                   error_message="No course information provided or course not found. Please try again.")
 
-        # Render the booking confirmation page with the found course
+        # Render booking confirmation page with the found course details
         return render_template("BookingConfirmation.html", course=course, course_id=course.id)
-    
 
+    # Handle POST Requests
     elif request.method == 'POST':
         # Retrieve course_id from the form data
         course_id = request.form.get('course_id')
-        course = Course.query.get(course_id) if course_id else None
+        special_requests = request.form.get('special_requests', None)
 
-        # Handle POST request for user login
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
+        if not course_id:
+            flash('No course selected. Please try again.', 'error')
+            return redirect(url_for('user.booking'))
 
-        if user and user.check_password(password):
-            # Login successful, store user ID in session
-            session['user_id'] = user.id  # Store user ID in the session
-             # Call the service to book the course
-            special_requests = request.form.get('special_requests', None)
-            booking_successful = user_service.book_course(
-                user_id=user.id,
-                course_id=course_id,
-                special_requests=special_requests
-            )
+        # Query the course by course_id
+        course = Course.query.get(course_id)
 
-            if booking_successful:
-                flash('Success! Booking confirmed. Go to your profile page to see details.', 'success')
-                booking_confirmation = True
-            else:
-                flash('This course is already booked.', 'error')
+        # Validate the course exists
+        if not course:
+            flash('Invalid course selected. Please try again.', 'error')
+            return redirect(url_for('user.booking'))
+
+        # Get the current user ID from the session
+        current_user_id = session.get('user_id')
+
+        # Call the booking service to book the course
+        booking_successful = user_service.book_course(
+            user_id=current_user_id,
+            course_id=course_id,
+            special_requests=special_requests
+        )
+
+        # Flash messages for success or failure
+        if booking_successful:
+            flash('Success! Booking confirmed. Go to your profile page to see details.', 'success')
         else:
-            # Login failed
-            flash('Invalid credentials. Please try again.', 'error')
+            flash('This course is already booked or another issue occurred.', 'error')
 
-    # Redirect to the user's bookings page
-    return redirect(url_for('user.view_bookings'))
+        # Redirect to user's bookings page after handling the booking
+        return redirect(url_for('user.view_bookings'))
 
   
 
 
 @user_bp.route('/book_course/<int:course_id>', methods=['GET', 'POST'])
+@role_required('customer')
 def booking_confirmation(course_id):
     if request.method == 'GET':
         course = Course.query.get(course_id)  # Fetch the course from the database
@@ -130,6 +154,7 @@ def booking_confirmation(course_id):
     return render_template('BookingConfirmation.html', course=course)
 
 @user_bp.route('/register', methods=['GET', 'POST'])
+@role_required('customer')
 def register():
     """
     Handle user registration. Prevent logged-in users from accessing the registration page.
@@ -147,7 +172,8 @@ def register():
     return render_template("Register.html")
 
 
-@user_bp.route('/mybookings', methods=['GET'])
+@user_bp.route('/my_bookings', methods=['GET'])
+@role_required('customer')
 def view_bookings():
     # Get the logged-in user's ID from the session
     user_id = session.get('user_id')
@@ -172,9 +198,8 @@ def view_bookings():
 
 
 @user_bp.route('/update/<int:user_id>', methods=['POST'])
+@role_required('customer')
 def update_user(user_id):
-    user_service = UserService()  # Initialize the UserService
-    
     try:
         # Get data from the form
         form_data = request.form
@@ -187,10 +212,10 @@ def update_user(user_id):
 
         # Hash the password if it's provided
         if 'password' in data:
-            data['password'] = generate_password_hash(data['password'])
+            data['password'] = User.generate_password_hash(data['password'])
 
         # Validate that the user_id exists
-        user = user_service.get_user(user_id)  # Assuming get_user(user_id) fetches a user object
+        user = user_service.get_user_data(user_id)  # Assuming get_user(user_id) fetches a user object
         if not user:
             flash("User not found. Please try again.", "error")
             return render_template("error.html", error_message="User not found.")
@@ -212,6 +237,7 @@ def update_user(user_id):
     
     
 @user_bp.route('/create', methods=['POST'])
+@role_required('customer')
 def create_user():
     user_service = UserService()  # Initialize the UserService
 
@@ -258,15 +284,18 @@ def create_user():
 
 @user_bp.route('/logout')
 def logout():
-    # Clear the session to log the user out
-    session.clear()
-    # Optionally redirect the user to the login or homepage
-    return render_template('Homepage.html')    
+    if current_user.is_authenticated:
+        logger.info(f"Admin logged out: {current_user.email}")
+        logout_user()
+        flash("You have been logged out successfully.", "success")
+    return redirect(url_for('public.home'))
 
 @user_bp.route('/book-course/<int:course_id>', methods=['POST'])
+@role_required('customer')
 def book_course():
     try:
         course_id = int(request.form.get('course_id'))
+        user_id = session.get('user_id')
         success = user_service.book_course(user_id, course_id)
         if success:
             raise not_implemented
@@ -279,8 +308,10 @@ def book_course():
         return render_template(error_template, error_message="Failed to book course."), 500
 
 @user_bp.route('/my-courses')
+@role_required('customer')
 def my_courses():
     try:
+        user_id = session.get('user_id')
         bookings = user_service.get_user_bookings(user_id)
         course_names = ", ".join([b["course_name"] for b in bookings])
         raise not_implemented

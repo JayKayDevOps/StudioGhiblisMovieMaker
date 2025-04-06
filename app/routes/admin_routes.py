@@ -1,7 +1,9 @@
 import logging
-from flask import Blueprint, render_template, request, render_template, redirect, url_for, jsonify ,flash
+from flask import Blueprint, request, render_template, redirect, url_for, jsonify ,flash
+from app.models import User
 from app.services.admin_service import AdminService
-from app.models import User 
+from app.utils.decorators import role_required
+from flask_login import login_user, logout_user, current_user
 
 
 # Configure logging
@@ -19,44 +21,44 @@ not_implemented = NotImplementedError("Implement this logic")
 
 # Define Blueprint
 admin_bp = Blueprint('admin', __name__)
-admin_service = AdminService()  
-
-@admin_bp.route('/admin/login', methods=['GET'])
-def admin_login():
-    print("Admin Login page")
-    return render_template("AdminLogin.html")
+admin_service = AdminService()
 
 @admin_bp.route('/admin/login', methods=['GET', 'POST'])
-def admin_dashboard():
-    """Handle admin login."""
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
+def admin_login():
+    """Handle admin login page and form submission."""
+    # For GET requests, just show the login page
+    if request.method == 'GET':
+        print("Admin Login page")
+        return render_template("AdminLogin.html")
 
-        # Validate form inputs
-        if not email or not password:
-            logger.warning("Login attempt with missing email or password.")
-            return render_template("AdminLogin.html", error="Email and password are required.")
+    # For POST requests, process the login form
+    email = request.form.get('email')
+    password = request.form.get('password')
 
-        try:
-            # Query the database for an admin user
-            admin = User.query.filter_by(email=email, role='admin').first()
+    # Validate form inputs
+    if not email or not password:
+        logger.warning("Login attempt with missing email or password.")
+        return render_template("AdminLogin.html", error="Email and password are required.")
 
-            # Validate password
-            if admin and admin.check_password(password):
-                logger.info(f"Admin login successful for email: {email}")
-                return redirect(url_for('admin.admin_home'))
-            else:
-                logger.warning(f"Login attempt failed for email: {email}")
-                return render_template("AdminLogin.html", error="Invalid email or password.")
-        except Exception as e:
-            logger.error(f"Error during login process: {e}", exc_info=True)
-            return render_template(error_template, error_message="Unexpected error occurred during login.")
+    try:
+        # Query the database for an admin user
+        admin = User.query.filter_by(email=email, role='admin').first()
 
-    return render_template("AdminLogin.html")
-
+        # Validate password
+        if admin and admin.check_password(password):
+            # Important: This is where you need to log the user in with Flask-Login
+            login_user(admin)
+            logger.info(f"Admin login successful for email: {email}")
+            return redirect(url_for('admin.admin_home'))
+        else:
+            logger.warning(f"Login attempt failed for email: {email}")
+            return render_template("AdminLogin.html", error="Invalid email or password.")
+    except Exception as e:
+        logger.error(f"Error during login process: {e}", exc_info=True)
+        return render_template(error_template, error_message="Unexpected error occurred during login.")
 
 @admin_bp.route('/admin/home', methods=['GET'])
+@role_required('admin')
 def admin_home():
     """Render the admin home page."""
     logger.info("Rendering admin home page.")
@@ -64,11 +66,10 @@ def admin_home():
 
 
 @admin_bp.route('/admin/bookings', methods=['GET'])
+@role_required('admin')
 def admin_bookings():
     """Fetch and render all course bookings."""
     try:
-        admin_service = AdminService()
-        
         # Get course ID from query parameters
         course_id = request.args.get('course_id', type=int)
         
@@ -94,10 +95,11 @@ def admin_bookings():
 
 
 @admin_bp.route('/admin/users', methods=['GET'])
+@role_required('admin')
 def admin_users():
     """Fetch and render all users."""
     try:
-        admin_service = AdminService()
+        # admin_service = AdminService()
         users = admin_service.get_all_users()
         if not users:
             logger.warning("No users found.")
@@ -110,10 +112,10 @@ def admin_users():
 
 
 @admin_bp.route('/admin/courses', methods=['GET'])
+@role_required('admin')
 def list_courses():
     """Fetch and render all courses."""
     try:
-        admin_service = AdminService()
         courses = admin_service.get_all_course_details()
         if not courses:
             logger.warning("No courses found.")
@@ -126,6 +128,7 @@ def list_courses():
 
 
 @admin_bp.route('/admin/bookings/<int:booking_id>/status', methods=['POST'])
+@role_required('admin')
 def update_booking_status(booking_id):
     """Update the status of a booking."""
     try:
@@ -138,6 +141,7 @@ def update_booking_status(booking_id):
         return render_template(error_template, error_message="Failed to update booking status.")
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['PATCH'])
+@role_required('admin')
 def update_booking(booking_id):
     """Update a booking by its ID."""
     try:
@@ -151,8 +155,8 @@ def update_booking(booking_id):
         return render_template(error_template, error_message="Failed to load bookings"), 500
 
 @admin_bp.route('/admin/update-subscription/<int:booking_id>', methods=['POST'])
+@role_required('admin')
 def update_subscription(booking_id):
-    admin_service = AdminService()
     form_data = request.form
     updated_subscription = admin_service.update_booking(booking_id, **form_data)
     if updated_subscription:
@@ -161,13 +165,13 @@ def update_subscription(booking_id):
         return "Subscription not found", 404
 
 @admin_bp.route('/admin/bookings/<int:booking_id>', methods=['DELETE'])
+@role_required('admin')
 def delete_booking(booking_id):
     """
     Route to delete a subscription (booking).
     """
     try:
         # Call the delete_booking method in the service
-        admin_service.delete_booking(booking_id)
         
         # Redirect to the admin bookings page on success
         return redirect(url_for('admin.admin_bookings'))
@@ -179,8 +183,28 @@ def delete_booking(booking_id):
         return jsonify({"success": False, "message": "An error occurred."}), 500
 
 
+# Create a new course
+@admin_bp.route('/admin/courses', methods=['POST'])
+@role_required('admin')
+def create_course():
+    try:
+        data = request.form
+        name = data.get("name")
+        description = data.get("description")
+        price = float(data.get("price"))
+
+        course_id = admin_service.create_course(name, description, price)
+
+        raise not_implemented
+        return f"Course created with ID {course_id}", 201
+
+    except Exception as e:
+        logger.error(f"Failed to create course: {e}", exc_info=True)
+        return render_template(error_template, error_message="Failed to create course"), 500
+
 
 @admin_bp.route('/admin/courses/<int:course_id>', methods=['PATCH'])
+@role_required('admin')
 def update_course(course_id):
     try:
         data = request.form
@@ -203,6 +227,7 @@ def update_course(course_id):
 
 # Delete course
 @admin_bp.route('/admin/courses/<int:course_id>', methods=['DELETE'])
+@role_required('admin')
 def delete_course(course_id):
     try:
         result = admin_service.delete_course(course_id)
@@ -218,18 +243,12 @@ def delete_course(course_id):
         return render_template(error_template, error_message="Failed to delete course"), 500
 
 
-# Create a new course
-@admin_bp.route('/admin/create-course')
-def create_course():
-    return render_template('AdminCreateCourse.html')
-
 @admin_bp.route('/admin/add-course', methods=['POST'])
+@role_required('admin')
 def add_course():
     """
     Route to add a new course.
     """
-    admin_service = AdminService()
-
     # Collect course data
     course_name = request.form.get('name')
     course_description = request.form.get('description')
@@ -260,12 +279,11 @@ def add_course():
     
     
 @admin_bp.route('/admin/add-modules', methods=['POST'])
+@role_required('admin')
 def add_modules():
     """
     Route to add modules to an existing course.
     """
-    admin_service = AdminService()
-
     # Collect course ID and module data
     course_id = request.form.get('course_id')
     module_titles = request.form.getlist('module_titles[]')
@@ -300,12 +318,11 @@ def add_modules():
 
 
 @admin_bp.route('/admin/get-courses', methods=['GET'])
+@role_required('admin')
 def get_courses():
     """
     Fetch all courses as JSON to populate the dropdown.
     """
-    admin_service = AdminService()
-
     # Fetch all courses
     courses = admin_service.get_all_courses()
 
@@ -314,3 +331,12 @@ def get_courses():
         return jsonify({'courses': courses})
     else:
         return jsonify({'courses': []}), 404
+
+@admin_bp.route('/admin/logout')
+def admin_logout():
+    """Handle admin logout."""
+    if current_user.is_authenticated:
+        logger.info(f"Admin logged out: {current_user.email}")
+        logout_user()
+        flash("You have been logged out successfully.", "success")
+    return redirect(url_for('admin.admin_login'))

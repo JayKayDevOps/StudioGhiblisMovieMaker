@@ -125,7 +125,9 @@
                 </svg>
                 <h1>Studio Ghibli’s Movie Maker</h1>
             </div>
-            <div class="button">Logout</div>
+            <a href="{{ url_for('admin.admin_logout') }}">
+                <button class="logout-button">Logout</button>
+            </a>
         </div>
 
         <!-- Divider -->

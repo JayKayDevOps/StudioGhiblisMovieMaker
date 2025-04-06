@@ -40,13 +40,34 @@ class DevelopmentConfig(Config):
     # Log Database URI for debugging (Optional)
     print(f"Connecting to database at {DB_HOST}:{DB_PORT}")
     
-class DevelopmentConfig2(Config):
+# class DevelopmentConfig2(Config):
+#     """Development configuration (AWS database)."""
+#     DEBUG = True
+#     SQLALCHEMY_ECHO = True  # Log SQL queries
+#     CREATE_DB = True  # Automatically create tables in development
+#
+#   # Environment variables for other configurations
+#     DB_USER = os.getenv('DB_USER', 'DB_Admin')
+#     DB_PASSWORD = os.getenv('DB_PASSWORD', '2ZnaqSZ:')
+#     DB_HOST = os.getenv('DB_HOST', 'mydbinstance.endpoint.amazonaws.com')
+#     DB_PORT = os.getenv('DB_PORT', '5432')
+#     DB_NAME = os.getenv('DB_NAME', 'moviemaking_dev')
+#
+#     SQLALCHEMY_DATABASE_URI = (
+#         f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+#     )
+#
+#     # Mask the password in logs
+#     print(f"Connecting to database at {DB_HOST}:{DB_PORT} with user {DB_USER}")
+
+
+class ProductionConfig(Config):
     """Development configuration (AWS database)."""
     DEBUG = True
     SQLALCHEMY_ECHO = True  # Log SQL queries
     CREATE_DB = True  # Automatically create tables in development
-    
-  # Environment variables for other configurations
+
+    # Environment variables for other configurations
     DB_USER = os.getenv('DB_USER', 'DB_Admin')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '2ZnaqSZ:')
     DB_HOST = os.getenv('DB_HOST', 'mydbinstance.endpoint.amazonaws.com')
@@ -56,24 +77,9 @@ class DevelopmentConfig2(Config):
     SQLALCHEMY_DATABASE_URI = (
         f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     )
-    
+
     # Mask the password in logs
     print(f"Connecting to database at {DB_HOST}:{DB_PORT} with user {DB_USER}")
-
-
-class ProductionConfig(Config):
-    DEBUG = False
-    CREATE_DB = False
-
-    DB_USER = os.getenv("DB_USER", "postgres")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "postgres")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME", "moviemaking_db")
-
-    SQLALCHEMY_DATABASE_URI = (
-        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-    )
 
 
 class TestingConfig(Config):
@@ -86,12 +92,11 @@ class TestingConfig(Config):
 
 
 config = {
-    "development2": DevelopmentConfig2,
     "development": DevelopmentConfig,
     "production": ProductionConfig,
     "testing": TestingConfig,
 }
 # Dynamically load the configuration
-flask_env = os.getenv("FLASK_ENV", "development2")
-selected_config = config.get(flask_env, DevelopmentConfig2)
+flask_env = os.getenv("FLASK_ENV", "production")
+selected_config = config.get(flask_env, {ProductionConfig})
 print(f"Using configuration: {selected_config.__name__}")
