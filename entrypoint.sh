@@ -18,6 +18,6 @@ else
     exit 1
 fi
 
-# Start the Flask app
-echo "🚀 Starting Flask application..."
-exec python /app/run.py
+# Start the Flask app using Gunicorn in production mode
+echo "🚀 Starting Flask application with Gunicorn..."
+exec gunicorn --bind 0.0.0.0:5000 run:app

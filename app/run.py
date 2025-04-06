@@ -13,11 +13,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Run the Flask App
+# Create Flask App
+app = create_app()
+
+# This block is only used in development mode!
 if __name__ == "__main__":
-    app = create_app()
-    logger.info("Starting the Flask app...")
+    logger.info("Starting the Flask app in development mode...")
     app.run(host="0.0.0.0", port=5000, debug=True)
-
-
-
