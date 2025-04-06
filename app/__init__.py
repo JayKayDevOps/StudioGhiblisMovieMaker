@@ -1,6 +1,6 @@
 
 import logging  # Import logging module
-from flask import Flask
+from flask import Flask, session
 from flask_login import LoginManager
 from sqlalchemy import text, inspect
 
@@ -28,6 +28,7 @@ def create_app(env="development"):
     
     app = Flask(__name__)
     app.config.from_object(config[env])
+    app.secret_key = 'your_secret_key'  # Make sure you define a secret key!
 
     # Register blueprints
     print("🔧 Registering Blueprints...")
@@ -67,6 +68,13 @@ def create_app(env="development"):
     @login_manager.user_loader
     def load_user(user_id):
         return User.query.get(int(user_id))
+
+    @app.context_processor
+    def inject_user_id():
+        """Injects the user_id from the session into all templates."""
+        from flask import session
+        return {'user_id': session.get('user_id')}
+
 
     logger.info("Flask-Login initialized")
 

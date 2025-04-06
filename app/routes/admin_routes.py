@@ -70,8 +70,6 @@ def admin_home():
 def admin_bookings():
     """Fetch and render all course bookings."""
     try:
-        admin_service = AdminService()
-        
         # Get course ID from query parameters
         course_id = request.args.get('course_id', type=int)
         
@@ -101,7 +99,7 @@ def admin_bookings():
 def admin_users():
     """Fetch and render all users."""
     try:
-        admin_service = AdminService()
+        # admin_service = AdminService()
         users = admin_service.get_all_users()
         if not users:
             logger.warning("No users found.")
@@ -118,7 +116,6 @@ def admin_users():
 def list_courses():
     """Fetch and render all courses."""
     try:
-        admin_service = AdminService()
         courses = admin_service.get_all_course_details()
         if not courses:
             logger.warning("No courses found.")
@@ -175,7 +172,6 @@ def delete_booking(booking_id):
     """
     try:
         # Call the delete_booking method in the service
-        admin_service.delete_booking(booking_id)
         
         # Redirect to the admin bookings page on success
         return redirect(url_for('admin.admin_bookings'))
@@ -253,8 +249,6 @@ def add_course():
     """
     Route to add a new course.
     """
-    admin_service = AdminService()
-
     # Collect course data
     course_name = request.form.get('name')
     course_description = request.form.get('description')
@@ -290,8 +284,6 @@ def add_modules():
     """
     Route to add modules to an existing course.
     """
-    admin_service = AdminService()
-
     # Collect course ID and module data
     course_id = request.form.get('course_id')
     module_titles = request.form.getlist('module_titles[]')
@@ -331,8 +323,6 @@ def get_courses():
     """
     Fetch all courses as JSON to populate the dropdown.
     """
-    admin_service = AdminService()
-
     # Fetch all courses
     courses = admin_service.get_all_courses()
 

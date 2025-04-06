@@ -1,4 +1,6 @@
 import logging
+
+import app
 from app.models import db, Subscriptions, User, Course
 from app.services.user_service import UserService
 from flask import Blueprint, request, render_template, redirect, url_for, flash ,session
@@ -21,7 +23,6 @@ logger = logging.getLogger(__name__)
 error_template = "error.html"
 not_implemented = NotImplementedError("Implement this logic")
 user_service = UserService()
-user_id = 1 # mocked for now 
 
 user_bp = Blueprint('user', __name__)
 
@@ -59,6 +60,7 @@ def login():
 
                 else:
                     # Default for users with no specific role
+                    session['user_id'] = user.id
                     return redirect(url_for('user.view_bookings'))
             else:
                 logger.warning(f"Login attempt failed for email: {email}")
@@ -75,7 +77,6 @@ def login():
 @role_required('customer')
 def booking():
     course = None
-    user_service = UserService()  
 
     if request.method == 'GET':
         # Handle GET request for course_id or course_name
@@ -106,30 +107,23 @@ def booking():
         course_id = request.form.get('course_id')
         course = Course.query.get(course_id) if course_id else None
 
-        # Handle POST request for user login
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
+        current_user_id = session.get('user_id')
 
-        if user and user.check_password(password):
-            # Login successful, store user ID in session
-            session['user_id'] = user.id  # Store user ID in the session
-             # Call the service to book the course
-            special_requests = request.form.get('special_requests', None)
-            booking_successful = user_service.book_course(
-                user_id=user.id,
-                course_id=course_id,
-                special_requests=special_requests
-            )
 
-            if booking_successful:
-                flash('Success! Booking confirmed. Go to your profile page to see details.', 'success')
-                booking_confirmation = True
-            else:
-                flash('This course is already booked.', 'error')
+         # Call the service to book the course
+        special_requests = request.form.get('special_requests', None)
+        booking_successful = user_service.book_course(
+            user_id=current_user_id,
+            course_id=course_id,
+            special_requests=special_requests
+        )
+
+        if booking_successful:
+            flash('Success! Booking confirmed. Go to your profile page to see details.', 'success')
+            booking_confirmation = True
         else:
-            # Login failed
-            flash('Invalid credentials. Please try again.', 'error')
+            flash('This course is already booked.', 'error')
+
 
     # Redirect to the user's bookings page
     return redirect(url_for('user.view_bookings'))
@@ -194,8 +188,6 @@ def view_bookings():
 @user_bp.route('/update/<int:user_id>', methods=['POST'])
 @role_required('customer')
 def update_user(user_id):
-    user_service = UserService()  # Initialize the UserService
-    
     try:
         # Get data from the form
         form_data = request.form
@@ -208,10 +200,10 @@ def update_user(user_id):
 
         # Hash the password if it's provided
         if 'password' in data:
-            data['password'] = generate_password_hash(data['password'])
+            data['password'] = User.generate_password_hash(data['password'])
 
         # Validate that the user_id exists
-        user = user_service.get_user(user_id)  # Assuming get_user(user_id) fetches a user object
+        user = user_service.get_user_data(user_id)  # Assuming get_user(user_id) fetches a user object
         if not user:
             flash("User not found. Please try again.", "error")
             return render_template("error.html", error_message="User not found.")
@@ -291,6 +283,7 @@ def logout():
 def book_course():
     try:
         course_id = int(request.form.get('course_id'))
+        user_id = session.get('user_id')
         success = user_service.book_course(user_id, course_id)
         if success:
             raise not_implemented
@@ -306,6 +299,7 @@ def book_course():
 @role_required('customer')
 def my_courses():
     try:
+        user_id = session.get('user_id')
         bookings = user_service.get_user_bookings(user_id)
         course_names = ", ".join([b["course_name"] for b in bookings])
         raise not_implemented

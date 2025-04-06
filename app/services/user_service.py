@@ -163,14 +163,14 @@ class UserService:
         logger.info(f"Fetching data for user ID: {user_id}")
         try:
             # Fetch user data from the database
-            user_data = db.session.query(User).filter_by(id=user_id).first()
+            user = db.session.query(User).filter_by(id=user_id).first()
             
-            if not user_data:
+            if not user:
                 logger.warning(f"No data found for user ID: {user_id}")
                 return None
             
-            logger.debug(f"Fetched user data: {user_data}")
-            return user_data
+            logger.debug(f"Fetched user data: {user}")
+            return user
         except Exception as e:
             logger.error("Error fetching user data from the database", exc_info=True)
             raise RuntimeError("Error fetching user data.") from e
@@ -193,8 +193,11 @@ class UserService:
 
             # Update fields dynamically
             for key, value in kwargs.items():
-                if hasattr(user, key) and key != 'id':  # Prevent updating 'id'
-                    setattr(user, key, value)
+                if key is 'password':
+                    user.set_password(value)
+                else:
+                    if hasattr(user, key) and key != 'id':  # Prevent updating 'id'
+                        setattr(user, key, value)
 
             # Commit the changes
             self.db_session.commit()
@@ -214,13 +217,17 @@ class UserService:
         """
         try:
             # Create a new user instance
-            new_user = User(**kwargs)
-            new_user.set_password(password)  # Use the model's set_password() method
+            user = User()
+            for key, value in kwargs.items():
+                if hasattr(user, key) and key != 'id':  # Prevent updating 'id'
+                    setattr(user, key, value)
+
+            user.set_password(password)  # Use the model's set_password() method
 
             # Add the new user to the database
-            db.session.add(new_user)
+            db.session.add(user)
             db.session.commit()
-            logger.info(f"User {new_user.first_name} {new_user.second_name} created successfully.")
+            logger.info(f"User {user.first_name} {user.second_name} created successfully.")
             return True, "User created successfully."
         except IntegrityError as e:
             self.db_session.rollback()
@@ -247,7 +254,7 @@ class UserService:
                 return False, "User not found."
 
             # Hash and set the new password
-            user.password_hash = generate_password_hash(new_password)
+            user.set_password(new_password)
             self.db_session.commit()
             logger.info(f"Password for user with ID {user_id} updated successfully.")
             return True, "Password updated successfully."
