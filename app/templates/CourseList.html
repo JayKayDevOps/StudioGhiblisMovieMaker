@@ -111,41 +111,54 @@
         </a>
         <div class="course-list">
             <h3>Course List</h3>
+            <p>Click on a course to book it.</p>
             
             <!-- Dynamically render courses and modules -->
             {% for course in courses %}
             <output name="course-id-{{ loop.index }}">{{ course.id }}</output>
-            <form method="GET" action="{{ url_for('user.booking') }}">
-                <div class="course">
-                    <div class="course-info">
-                        <output name="course-image-{{ loop.index }}">
+                <form method="GET" action="{{ url_for('user.booking') }}">
+                    <div class="course">
+                        <div class="course-info">
+                            <!-- Image (not sent to backend) -->
                             <img src="https://placehold.co/80x75" alt="Course Image for {{ course.course_name }}">
-                        </output>
-                        <output name="course-title-{{ loop.index }}">{{ course.name }}</output>
-                        <output name="course-date-{{ loop.index }}">Start Date: TBD</output>
-                        <output name="course-id-{{ loop.index }}">{{ course.id }}</output>
-                        <div>Places left: <output name="course-places-{{ loop.index }}">TBD</output></div>
+
+                            <!-- Course Title (send as GET parameter) -->
+                            <input type="hidden" name="course_name" value="{{ course.course_name }}">
+
+                            <!-- Course Start Date -->
+                            <input type="hidden" name="course_date" value="Start Date: TBD">
+
+                            <!-- Course ID -->
+                            <input type="hidden" name="course_id" value="{{ course.course_id }}">
+
+                            <!-- Visible field for places left (still not sent to backend unless converted to input) -->
+                            <div>Places left: <output>{{ course.places_left or 'TBD' }}</output></div>
+                        </div>
+
+                        <div class="course-actions">
+                            <!-- Submit button to trigger GET request -->
+                        <a href="{{ url_for('user.booking', course_id=course.course_id, course_name=course.course_name) }}" class="button">
+                        Book
+                        </a>
+
+                        </div>
+
+                        <div class="course-modules">
+                            <h4>Modules:</h4>
+                            {% if course.modules %}
+                                <ul>
+                                    {% for module in course.modules %}
+                                        <li>
+                                            <strong>{{ module.module_title }}</strong>: {{ module.module_description }}
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <p>No modules available for this course.</p>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="course-actions">
-                        <!-- Pass the course ID as a hidden input -->
-                        <input type="hidden" name="course_id" value="{{ course.id }}">
-                        <button type="submit" class="button">Book</button>
-                    </div>
-                    
-                    <div class="course-modules">
-                        <h4>Modules:</h4>
-                        {% if course.modules %}
-                        <ul>
-                            {% for module in course.modules %}
-                            <li><strong>{{ module.module_title }}</strong>: {{ module.module_description }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% else %}
-                        <p>No modules available for this course.</p>
-                        {% endif %}
-                    </div>
-                </div>
-            </form>
+                </form>
             {% endfor %}
             
         </div>

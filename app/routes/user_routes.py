@@ -76,18 +76,15 @@ def login():
 @user_bp.route('/booking', methods=['GET', 'POST'])
 @role_required('customer')
 def booking():
-
-    print('in booking\n\n\n\n\n')
     course = None
 
     # Handle GET Requests
     if request.method == 'GET':
         print('in GET request')
         print(request.args)
-        print(request.form)
         # Get course_id or course_name from the query parameters
-        course_id = request.form.get('course_id')
-        course_name = request.form.get('course_name')
+        course_id = request.args.get('course_id')
+        course_name = request.args.get('course_name')
 
         print('course_id: ', course_id)
         print('course_name: ', course_name)
