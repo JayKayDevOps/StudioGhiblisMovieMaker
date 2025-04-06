@@ -72,6 +72,7 @@
             }
 
         .course-actions {
+            display: inline-flex;
             position: absolute;
             right: 10px;
             bottom: 10px;
@@ -85,10 +86,109 @@
             color: #1E1E1E;
         }
 
-            .home-link svg {
-                margin-right: 5px;
-            }
-         
+        .home-link svg {
+            margin-right: 5px;
+        }
+
+        /* General form styling */
+        form {
+            max-width: 600px; /* Limit the width of the form for better readability */
+            margin: 20px auto; /* Center the form with auto margins */
+            padding: 20px; /* Add padding inside the form */
+            background-color: #f9f9f9; /* Light background for better visibility */
+            border: 1px solid #ddd; /* Add a subtle border */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Light shadow */
+        }
+
+        /* Styling for course container */
+        .course {
+            display: flex;
+            flex-direction: column; /* Stack elements vertically */
+            gap: 20px; /* Space between sections */
+        }
+
+        /* Course info section */
+        .course-info {
+            display: flex; /* Layout for image and details */
+            align-items: center; /* Vertically align content */
+            gap: 15px; /* Space between image and text */
+        }
+
+        .course-info img {
+            flex-shrink: 0; /* Prevent the image from shrinking */
+            width: 80px; /* Maintain consistent image size */
+            height: 75px; /* Height to match image proportions */
+            border-radius: 4px; /* Optional rounded corners */
+            border: 1px solid #ccc; /* Thin border for the image */
+        }
+
+        .course-info div {
+            font-size: 14px; /* Set a comfortable font size */
+            color: #333; /* Darker text color for readability */
+        }
+
+        /* Modules section styling */
+        .course-modules h4 {
+            text-align: center;
+            margin-bottom: 10px; /* Space below the title */
+            font-size: 16px; /* Slightly larger module heading */
+            color: #878787; /* Add a touch of color to headings */
+        }
+
+        .module-info ul {
+            list-style-type: disc; /* Add bullet points for modules */
+            margin: 0;
+            padding-left: 20px; /* Add some indentation for bullets */
+        }
+
+        .module-info li {
+            margin-bottom: 8px; /* Add spacing between module items */
+            font-size: 14px; /* Adjust font size for readability */
+            line-height: 1.6; /* Add better line spacing */
+        }
+
+        /* Places left styling */
+        .course-info output {
+            font-weight: bold; /* Highlight the remaining places */
+            color: #d9534f; /* Add red color for emphasis */
+        }
+
+        .course-modules {
+            margin-bottom: 30px;
+        }
+
+
+        /* Action area and button styling */
+     /* Center the Book button on its own line */
+.course-actions {
+    text-align: center;          /* Center the button horizontally */
+    margin-top: 20px;            /* Add some space above the button */
+}
+
+.course-actions .button {
+    display: inline-block;       /* Ensure it's treated like a button */
+    background-color: #878787;  /* Blue background for the button */
+    color: #fff;                 /* White text */
+    padding: 10px 20px;          /* Add spacing around the text */
+    border: none;                /* No border for a cleaner look */
+    border-radius: 5px;          /* Rounded corners */
+    text-align: center;          /* Ensure text is centered */
+    text-decoration: none;       /* Remove hyperlink underline */
+    font-size: 14px;             /* Font size for readability */
+    font-weight: bold;           /* Bold text for emphasis */
+    cursor: pointer;             /* Pointer cursor on hover */
+    transition: background-color 0.3s ease; /* Smooth hover effect */
+    margin: 0 auto;              /* Centers the button in flex or block containers */
+}
+
+/* Hover effect for the button */
+.course-actions .button:hover {
+    background-color: #434343;  /* Darker blue on hover */
+}
+.p1 {
+    padding: 10px;
+}
 
     </style>
 </head>
@@ -135,27 +235,27 @@
                             <div>Places left: <output>{{ course.places_left or 'TBD' }}</output></div>
                         </div>
 
-                        <div class="course-actions">
-                            <!-- Submit button to trigger GET request -->
-                        <a href="{{ url_for('user.booking', course_id=course.course_id, course_name=course.course_name) }}" class="button">
-                        Book
-                        </a>
-
-                        </div>
 
                         <div class="course-modules">
                             <h4>Modules:</h4>
                             {% if course.modules %}
-                                <ul>
-                                    {% for module in course.modules %}
-                                        <li>
-                                            <strong>{{ module.module_title }}</strong>: {{ module.module_description }}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
+                                    <ul>
+                                        {% for module in course.modules %}
+                                            <li>
+                                                <strong>{{ module.module_title }}</strong>: {{ module.module_description }}
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
                             {% else %}
-                                <p>No modules available for this course.</p>
+                                <p class="p1">No modules available for this course.</p>
                             {% endif %}
+                        </div>
+                        <div class="course-actions">
+                            <!-- Submit button to trigger GET request -->
+                            <a href="{{ url_for('user.booking', course_id=course.course_id, course_name=course.course_name) }}" class="button">
+                                Book
+                            </a>
+
                         </div>
                     </div>
                 </form>
