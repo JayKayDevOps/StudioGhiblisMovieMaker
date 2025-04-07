@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Bookings</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 450px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .button {
+            background: #2C2C2C;
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #2C2C2C;
+            text-align: center;
+            cursor: pointer;
+        }
+
+        .line {
+            border-top: 1px solid black;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .home-link {
+            display: flex;
+            align-items: center;
+            text-decoration: underline;
+            color: #1E1E1E;
+            margin-bottom: 20px;
+        }
+
+        .home-link svg {
+            margin-right: 5px;
+        }
+
+        .vertical-tables {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .booking-record {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            background: #f9f9f9;
+        }
+
+        .booking-record p {
+            margin: 5px 0;
+        }
+
+        .booking-record hr {
+            margin: 10px 0;
+            border: none;
+            height: 1px;
+            background-color: #ddd;
+        }
+
+        p {
+            text-align: center;
+        }
+    </style>
+</head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Bookings</title>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Admin - Bookings</h1>
+            <a href="{{ url_for('admin.admin_logout') }}">
+                <button class="logout-button">Logout</button>
+            </a>
+        </div>
+        <div class="line"></div>
+
+        <!-- Home Link -->
+        <a href="{{ url_for('admin.admin_home') }}" class="home-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Home
+        </a>
+
+        <!-- Booking List -->
+        <div class="booking-record">
+            {% if bookings %}
+                {% for booking in bookings %}
+                    <form action="{{ url_for('admin.update_subscription', booking_id=booking.booking_id) }}" method="POST">
+                        <p><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+                        <p>
+                            <strong>User Name:</strong> 
+                            <input type="text" name="user_name" value="{{ booking.user_name }}">
+                        </p>
+                        <p>
+                            <strong>Email:</strong> 
+                            <input type="email" name="user_email" value="{{ booking.user_email }}">
+                        </p>
+                        <p>
+                            <strong>Course:</strong>
+                            <!-- Display course name as plain text, not editable -->
+                            <span>{{ booking.course_name }}</span>
+                        </p>
+        
+                        <p>
+                            <strong>Status:</strong>
+                            <select name="status" required>
+                                <option value="pending" {% if booking.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="confirmed" {% if booking.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                <option value="cancelled" {% if booking.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            </select>
+                        </p>
+                        <p><strong>Subscription Date:</strong> {{ booking.subscription_date }}</p>
+                        <button type="submit">Save Changes</button>
+                    </form>
+                    <form action="{{ url_for('admin.delete_booking', booking_id=booking.booking_id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this booking?');">
+                        <button type="submit" style="background-color: red; color: white;">Delete</button>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <p>No bookings available.</p>
+            {% endif %}
+        
+    </div>
+</body>
+</html>
+

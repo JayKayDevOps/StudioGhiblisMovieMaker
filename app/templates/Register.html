@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 393px;
+            margin: auto;
+            position: relative;
+            background: white;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .Film {
+            display: flex;
+            align-items: center;
+        }
+
+        .StudioGhibliSMovieMaker {
+            font-size: 20px;
+            font-weight: 400;
+            color: black;
+            margin-left: 10px;
+        }
+
+        .divider {
+            border-top: 1px solid black;
+            margin: 20px 0;
+        }
+
+        .FormHeader h2 {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .FormSignUp {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .InputField {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .Input {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            background: white;
+        }
+
+        .Button {
+            padding: 10px 20px;
+            background: #2C2C2C;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+            margin: 10px auto; /* Centers button horizontally */
+            display: block; /* Allows centering via margin */
+        }
+
+        .Button:hover {
+            background: #555;
+        }
+
+        .CancelButton {
+            background: none;
+            color: #1E1E1E;
+            text-decoration: underline;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+
+        .ButtonContainer {
+            text-align: center; 
+            
+        }
+        .home-link {
+            margin: 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: underline;
+            color: #1E1E1E;
+        }
+        .large-input {
+            width: 400px;
+            height: 30px; 
+            }   
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h1>Studio Ghibli’s Movie Maker</h1>
+            </div>
+        </div>
+        <div class="line"></div>
+        <a href="{{ url_for('public.home') }}" class="home-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Home
+        </a>
+        <div class="divider"></div>
+        <div class="FormHeader">
+            <h2>Create a New Account</h2>
+        </div>
+        <form action="/user/create" method="POST">
+            <div>
+                <label for="first_name">First Name:</label>
+                <input type="text" id="first_name" name="first_name" maxlength="255" class="large-input" required>
+            </div>
+            <div>
+                <label for="second_name">Last Name:</label>
+                <input type="text" id="second_name" name="second_name" maxlength="255" class="large-input" required>
+            </div>
+            <div>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required maxlength="255" class="large-input"
+                       pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                       title="Please enter a valid email address">
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" maxlength="255" class="large-input" required>
+            </div>
+            <button type="submit" class="Button">Create User</button>
+        </form>
+    </div>
+</body>
+</html>

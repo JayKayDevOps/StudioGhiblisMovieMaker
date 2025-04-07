@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Centers container vertically */
+        }
+
+        .AdvancedSearch {
+            width: 393px; /* Consistent width with other pages */
+            background: white;
+            border: 1px solid #d9d9d9; /* Subtle border for structure */
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .Frame2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .Film svg {
+            width: 48px;
+            height: 48px;
+        }
+
+        .StudioGhibliSMovieMaker {
+            font-size: 20px;
+            font-family: 'Kokoro', sans-serif;
+            font-weight: 400;
+            color: black;
+        }
+
+        .Group14 {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .TextLink {
+            color: #1E1E1E;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .SearchCoursesIMLookingFor {
+            font-family: 'Kokoro', sans-serif;
+            color: black;
+            font-size: 20px;
+            font-weight: 400;
+            text-align: center;
+        }
+
+        .SearchCoursesIMLookingFor span {
+            display: block;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .Group2 {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .InputGroup {
+            display: flex;
+            flex-direction: column; /* Align label and input vertically */
+            gap: 5px;
+        }
+
+        .InputGroup label {
+            font-size: 16px;
+            font-family: 'Kokoro', sans-serif;
+            color: black;
+        }
+
+        .InputBox {
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #d9d9d9;
+            background-color: white;
+            width: 100%; /* Ensures it fills available width */
+        }
+
+        .Button {
+            padding: 10px 20px;
+            background: #2C2C2C;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            text-align: center;
+            margin: 10px auto; /* Centers button horizontally */
+            display: block; /* Allows centering via margin */
+        }
+
+        .SearchResultsBox {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .SearchResultItem {
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .SearchTitle {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .SearchDescription {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .SearchPrice {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .BookCourseLink {
+            font-size: 14px;
+            color: #1E90FF;
+            text-decoration: underline;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="AdvancedSearch">
+        <div class="Frame2">
+            <div class="Film">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
+        </div>
+
+        <div class="Group14">
+            <a href="{{ url_for('public.home') }}" class="Group14">
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11.875 7.5H3.125M3.125 7.5L7.5 11.875M3.125 7.5L7.5 3.125" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <span class="TextLink">Home</span>
+            </a>
+        </div>
+
+        <div class="SearchCoursesIMLookingFor">
+            <span>Search courses</span>
+            <span>I’m looking for..</span>
+        </div>
+
+        <!-- Search Form -->
+        <form action="{{ url_for('public.search_courses') }}" method="GET" class="Group2">
+            <div class="InputGroup">
+                <label for="name">Course Name</label>
+                <input type="text" id="name" name="name" class="InputBox">
+            </div>
+            <div class="InputGroup">
+                <label for="delivery">Delivery</label>
+                <input type="text" id="delivery" name="delivery" class="InputBox">
+            </div>
+            <div class="InputGroup">
+                <label for="keywords">Key Words</label>
+                <input type="text" id="keywords" name="query" class="InputBox">
+            </div>
+            <button type="submit" class="Button">Search</button>
+        </form>
+
+        <div class="SearchResultsBox">
+            {% if results and results|length > 0 %}
+            <form method="GET" action="{{ url_for('user.booking') }}">
+                {% for course in results %}
+                <div class="SearchResultItem">
+                    <input type="radio" id="course_{{ course.id }}" name="course_id" value="{{ course.id }}" required>
+                    <label for="course_{{ course.id }}">
+                        <p class="SearchTitle">{{ course.name }}</p>
+                        <p class="SearchDescription">{{ course.description }}</p>
+                        <p class="SearchPrice">Price: {{ course.price }} EUR</p>
+                    </label>
+                </div>
+                {% endfor %}
+                <button type="submit" class="Button">Book Selected Course</button>
+            </form>
+            {% else %}
+            <p class="NoResultsMessage">No results found for your query.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
+

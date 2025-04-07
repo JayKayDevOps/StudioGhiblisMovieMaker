@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio Ghibli’s Movie Maker</title>
+    <script src="https://kit.fontawesome.com/6ef668882c.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding-top: 20px;
+        }
+
+        .homepage {
+            width: 450px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .StudioGhibliSMovieMaker {
+            font-family: 'Kokoro', sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            color: black;
+        }
+
+        .login-button {
+            background: #2C2C2C;
+            color: #F5F5F5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s ease;
+        }
+
+        .login-button:hover {
+            background: #444444;
+        }
+
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: black;
+            margin: 10px 0;
+        }
+
+        .welcome-text {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-spacing: 20px; /* Spacing between items */
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* Forces two items per row */
+            gap: 20px; /* Space between grid items */
+        }
+
+        .grid-container {
+           display: grid;
+           grid-template-columns: repeat(2, 1fr); /* Ensures two items per row */
+           gap: 20px; /* Space between grid items */
+           max-width: 400px; /* Limits the overall grid container width */
+           margin: 0 auto; /* Centers the grid */
+      }
+
+        .grid-item {
+           text-align: center;
+           background: #D9D9D9;
+           border-radius: 10px;
+           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+           transition: transform 0.3s ease, box-shadow 0.3s ease;
+           padding: 20px;
+           height: 150px; /* Fixed height for uniformity */
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+           width: 150px; /* Ensures consistent item width */
+    }
+
+        .grid-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .grid-item a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .grid-item i {
+            font-size: 2rem;
+            color: #007BFF;
+        }
+
+        .grid-item p {
+            font-size: 1rem;
+            font-weight: bold;
+            color: #333;
+            margin-top: 10px;
+        }
+        .flash-messages {
+            margin: 10px auto;
+            text-align: center;
+       }
+
+        .flash-message {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .flash-message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+       }
+
+        .flash-message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+       }
+
+    </style>
+</head>
+<body>
+    <div class="homepage">
+        <div class="header">
+            <div class="Film">
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+            </div>
+            <div class="StudioGhibliSMovieMaker">Studio Ghibli’s Movie Maker</div>
+                 <a href="{{ url_for('user.login') }}" style="text-decoration: none;">
+                    <button class="login-button">Login</button>
+                </a>
+
+            </div>
+
+        <div class="divider"></div>
+
+        <div class="welcome-text">Welcome!</div>
+        <p style="text-align: center;">We love anime and Studio Ghibli. Our mission is to share our enthusiasm through movie-making courses!</p>
+        <div class="flash-messages">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                  <ul class="flashes">
+                    {% for category, message in messages %}
+                        <div class="flash-message {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
+        </div>
+        <div class="grid-container">
+            <div class="grid-item">
+                <a href="{{ url_for('public.list_courses') }}">
+                    <div><span><i class="fas fa-video"></i></span><p>Course List</p></div>
+                </a>
+            </div>
+            <div class="grid-item">
+                <a href="{{ url_for('public.search_courses') }}">
+                    <div><span><i class="fas fa-search"></i></span><p>Search</p></div>
+                </a>
+            </div>
+            <div class="grid-item">
+                <a href="{{ url_for('user.register') }}">
+                    <div><span><i class="fas fa-clipboard"></i></span><p>Register</p></div>
+                </a>
+            </div>
+            <div class="grid-item">
+                <a href="{{ url_for('user.view_bookings') }}">
+                    <div><span><i class="fas fa-user"></i></span><p>Profile</p></div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+
+

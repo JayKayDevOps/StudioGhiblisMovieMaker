@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECS Task Definition and Service for Flask App using Port 5000'
+
+Parameters:
+  DBPassword:
+    Description: 'Database password'
+    Type: 'String'
+    NoEcho: true
+  FlaskEnv:
+    Description: 'Flask environment (development or production)'
+    Type: 'String'
+    Default: 'development'
+
+Resources:
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow HTTP access to Flask app'
+      VpcId: !ImportValue MyVPCID  # Import the VPC ID from another stack
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 5000
+          ToPort: 5000
+          CidrIp: '0.0.0.0/0'
+
+  FlaskAppTaskDefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      Family: 'flask-app-task'
+      NetworkMode: 'awsvpc'
+      RequiresCompatibilities:
+        - 'FARGATE'
+      Cpu: '512'
+      Memory: '1024'
+      ExecutionRoleArn: !ImportValue TaskExecutionRoleArn  # Import the Task Execution Role ARN
+      TaskRoleArn: !ImportValue MyTaskExecutionRoleExportName
+      ContainerDefinitions:
+        - Name: 'flask-app-container'
+          Image: !ImportValue ECRRepositoryURI  # Import the ECR Repository URI
+          PortMappings:
+            - ContainerPort: 5000
+              Protocol: 'tcp'
+          LogConfiguration:
+            LogDriver: 'awslogs'
+            Options:
+              awslogs-group: '/ecs/flask-app-service'
+              awslogs-region: !Ref 'AWS::Region'
+              awslogs-stream-prefix: 'ecs'
+          Environment:
+            - Name: 'FLASK_ENV'
+              Value: !Ref FlaskEnv
+            - Name: 'DB_USER'
+              Value: 'DB_Admin'
+            - Name: 'DB_PASSWORD'
+              Value: !Ref DBPassword
+            - Name: 'DB_HOST'
+              Value: !ImportValue RDSInstanceEndpoint  # Import the RDS Endpoint
+            - Name: 'DB_PORT'
+              Value: '5432'
+            - Name: 'DB_NAME'
+              Value: 'moviemaking_dev'
+            - Name: 'SECRET_KEY'
+              Value: 'supersecretkey'
+
+  FlaskAppService:
+    Type: 'AWS::ECS::Service'
+    Properties:
+      Cluster: !ImportValue MyECSClusterName  # Import the ECS Cluster Name
+      TaskDefinition: !Ref FlaskAppTaskDefinition
+      DesiredCount: 2
+      LaunchType: 'FARGATE'
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          Subnets:
+            - !ImportValue PublicSubnetId  # Import the Public Subnet ID
+          SecurityGroups:
+            - !Ref MySecurityGroup
+          AssignPublicIp: 'ENABLED'
+

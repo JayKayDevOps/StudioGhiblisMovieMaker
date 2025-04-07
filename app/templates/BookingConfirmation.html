@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Course</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 393px;
+            margin: auto;
+            position: relative;
+            background: white;
+            border: 1px solid #d9d9d9; /* Optional border for better alignment */
+            border-radius: 8px;
+            padding: 20px; /* Padding for a unified look */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .Film {
+            display: flex;
+            align-items: center;
+        }
+
+        .StudioGhibliSMovieMaker {
+            font-size: 20px;
+            font-weight: 400;
+            color: black;
+            margin-left: 10px;
+        }
+
+        .divider {
+            border-top: 1px solid black;
+            margin: 20px 0;
+        }
+
+        .FormHeader h2 {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .FormLogIn {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .InputField {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .Input {
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #D9D9D9;
+            background: white;
+        }
+
+        .Button {
+            padding: 10px 20px;
+            background: #2C2C2C;
+            color: white;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid #2C2C2C;
+        }
+
+        .Button:hover {
+            background: #555;
+        }
+
+        .confirmation {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .confirmation h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #4CAF50;
+        }
+
+        .MessageContainer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .home-link {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            text-decoration: underline;
+            color: #1E1E1E;
+        }
+
+        .home-link svg {
+            margin-right: 5px;
+        }
+        .ButtonContainer {
+        text-align: center; 
+        }
+        .success {
+        color: green;
+        font-weight: bold;
+        }
+        .error {
+        color: red;
+        font-weight: bold;
+        }
+        .InputGroup {
+            margin-bottom: 20px; /* Add space between input groups */
+        }
+
+        .InputLabel {
+            display: block;        /* Makes the label appear on its own line above the field */
+            margin-bottom: 5px;    /* Add spacing between the label and the textarea */
+            font-weight: bold;     /* Makes the label stand out */
+            font-size: 14px;       /* Adjust font size for clarity */
+        }
+
+        .InputBox {
+            width: 100%;           /* Make textarea stretch to full container width */
+            min-height: 120px;     /* Ensure it's visually larger */
+            padding: 10px;         /* Add internal spacing for better UX */
+            border: 1px solid #ccc; /* Light border for clarity */
+            border-radius: 4px;    /* Rounded corners for a modern design */
+            font-size: 14px;       /* Match font size with the inputs */
+            font-family: Arial, sans-serif; /* Keep the font consistent with the label */
+            resize: vertical;      /* Allow vertical resizing only */
+        }
+
+        .InputBox:focus {
+            border-color: #007bff; /* Highlight border when focused */
+            outline: none;         /* Remove default outline */
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 4V44M34 4V44M4 24H44M4 14H14M4 34H14M34 34H44M34 14H44M8.36 4H39.64C42.048 4 44 5.952 44 8.36V39.64C44 42.048 42.048 44 39.64 44H8.36C5.952 44 4 42.048 4 39.64V8.36C4 5.952 5.952 4 8.36 4Z" stroke="#1E1E1E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h1>Studio Ghibli’s Movie Maker</h1>
+            </div>
+            <a href="/create-account" class="Button" style="display: inline-block; text-align: center; text-decoration: none;">Create Account</a>
+        </div>
+        <div class="line"></div>
+        <a href="{{ url_for('public.home') }}" class="home-link">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 18L9 12L15 6" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            Home
+        </a>
+        <div class="FormHeader">
+            <h2>Confirm Booking</h2>
+        </div>
+    
+        <!-- Flash Messages -->
+        <div class="MessageContainer">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="FlashMessages">
+                        {% for category, message in messages %}
+                            <p class="{{ category }}">{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    
+        <!-- Authenticate login details and confirm Section -->
+        <form id="ConfirmForm" action="/user/booking" method="POST" class="FormLogIn">
+            <input type="hidden" name="course_id" value="{{ course_id }}">
+{#            <div class="InputField">#}
+{#                <label for="email">Email Address</label>#}
+{#                <input type="email" id="email" name="email" class="Input" placeholder="Enter your email" required>#}
+{#            </div>#}
+{#            <div class="InputField">#}
+{#                <label for="password">Password</label>#}
+{#                <input id="password" type="password" name="password" class="Input" placeholder="Enter your password" required>#}
+{#            </div>#}
+        <div class="InputGroup">
+            <label for="Special_Requests" class="InputLabel">Special Requests</label>
+            <textarea id="Special_Requests" name="special_requests" class="InputBox" rows="5" cols="40"
+                placeholder="Enter any special requests..."></textarea>
+        </div>
+
+    
+            <!-- Booking Confirmation Section -->
+            {% if course %}
+            <div class="confirmation">
+                <h2>Course Booking</h2>
+                <p><strong>Course:</strong> {{ course.name }}</p>
+                <p><strong>Description:</strong> {{ course.description }}</p>
+                <p><strong>Price:</strong> {{ course.price }} EUR</p>
+            </div>
+            {% endif %}
+        </form>
+    
+        <div class="ButtonContainer">
+            <button type="submit" form="ConfirmForm" class="Button">Confirm Booking</button>
+        </div>
+    </div>
+</body>
+</html>
+

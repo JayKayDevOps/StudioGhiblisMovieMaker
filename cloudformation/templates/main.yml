@@ -1,0 +1,257 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECS Cluster with Fargate, RDS PostgreSQL with Subnets, and IAM Role'
+
+Parameters:
+  DBPassword:
+    Description: 'The database admin account password'
+    Type: 'String'
+    NoEcho: true
+
+Resources:
+  MyVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '10.0.0.0/16'
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: 'Name'
+          Value: 'MyVPC'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: 'Name'
+          Value: 'MyInternetGateway'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref MyVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicRouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref MyVPC
+      Tags:
+        - Key: 'Name'
+          Value: 'PublicRouteTable'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  PublicRoute:
+    Type: 'AWS::EC2::Route'
+    DependsOn: InternetGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.1.0/24'
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: 'eu-west-1a'
+      Tags:
+        - Key: 'Name'
+          Value: 'PublicSubnet'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  PublicSubnetRouteTableAssociation:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref PublicSubnet
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.2.0/24'
+      AvailabilityZone: 'eu-west-1a'
+      Tags:
+        - Key: 'Name'
+          Value: 'PrivateSubnet1'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  PrivateSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      VpcId: !Ref MyVPC
+      CidrBlock: '10.0.4.0/24'
+      AvailabilityZone: 'eu-west-1b'
+      Tags:
+        - Key: 'Name'
+          Value: 'PrivateSubnet2'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  MyCluster:
+    Type: 'AWS::ECS::Cluster'
+    Properties:
+      ClusterName: 'MyECSCluster'
+      CapacityProviders:
+        - FARGATE
+        - FARGATE_SPOT
+      DefaultCapacityProviderStrategy:
+        - CapacityProvider: 'FARGATE'
+          Weight: 1
+
+  MyECRRepository:
+    Type: 'AWS::ECR::Repository'
+    Properties:
+      RepositoryName: 'my-repo'
+
+  MyDBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: 'My DB subnet group'
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  MyRDSInstance:
+    Type: 'AWS::RDS::DBInstance'  
+    Properties:
+      DBInstanceIdentifier: 'mydbinstance'
+      AllocatedStorage: '20'
+      DBInstanceClass: 'db.t3.micro'
+      Engine: 'postgres'
+      MasterUsername: 'DB_Admin'
+      MasterUserPassword: !Ref DBPassword
+      DBName: 'moviemaking_dev'
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref MyDBSecurityGroup
+      Tags:
+        - Key: 'Name'
+          Value: 'MyPostgresInstance'
+        - Key: 'Environment'
+          Value: 'DEV'
+
+  MyDBSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'RDS security group'
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: '0.0.0.0/0'
+
+
+  MySecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Allow HTTP access to Flask app'
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: 'tcp'
+          FromPort: 5000
+          ToPort: 5000
+          CidrIp: '0.0.0.0/0'
+
+  MyTaskExecutionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'ecs-tasks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'ECSAccessPolicy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  # ECS Service Operations
+                  - 'ecs:DescribeServices'
+                  - 'ecs:UpdateService'
+                  - 'ecs:CreateService'
+                  - 'ecs:ListServices'
+                  - 'ecs:DescribeTaskDefinition'
+                  - 'ecs:RegisterTaskDefinition'
+                  - 'ecs:DeregisterTaskDefinition'
+                  - 'ecs:DescribeTasks'
+                  - 'ecs:StartTask'
+                  - 'ecs:StopTask'
+                  - 'ecs:RunTask'
+                  # ECR Access (for fetching/pushing images)
+                  - 'ecr:GetAuthorizationToken'
+                  - 'ecr:BatchCheckLayerAvailability'
+                  - 'ecr:GetDownloadUrlForLayer'
+                  - 'ecr:BatchGetImage'
+                  - 'ecr:PutImage'
+                  - 'ecr:ListImages'
+                  # CloudWatch Logs (for ECS task logging)
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                  # secrets
+                  - 'secretsmanager:GetSecretValue'
+                Resource: '*'
+
+Outputs:
+  PrivateSubnet1Id:
+    Value: !Ref PrivateSubnet1
+  PrivateSubnet2Id:
+    Value: !Ref PrivateSubnet2
+  MyECSClusterName:
+    Description: 'The name of the ECS Cluster'
+    Value: !Ref MyCluster  # References the ECS cluster's logical ID
+    Export:
+      Name: MyECSClusterName  # Exports it for other stacks to import
+  InternetGatewayId:
+    Value: !Ref InternetGateway
+  PublicRouteTableId:
+    Value: !Ref PublicRouteTable
+  RDSInstanceEndpoint:
+    Description: 'The endpoint of the RDS instance'
+    Value: !GetAtt MyRDSInstance.Endpoint.Address
+    Export:
+      Name: 'RDSInstanceEndpoint'
+  VPCId:
+    Description: 'The ID of the VPC'
+    Value: !Ref MyVPC
+    Export:
+      Name: MyVPCID  # This name will be used by other stacks to import the value
+  PublicSubnetId:
+    Description: 'The ID of the public subnet'
+    Value: !Ref PublicSubnet
+    Export:
+      Name: PublicSubnetId  
+  ECRRepositoryURI:
+    Description: 'The URI of the ECR Repository'
+    Value: !GetAtt MyECRRepository.RepositoryUri
+    Export:
+      Name: ECRRepositoryURI
+  TaskExecutionRoleArn:
+    Description: 'The ARN of the ECS Task Execution Role'
+    Value: !GetAtt MyTaskExecutionRole.Arn
+    Export:
+      Name: TaskExecutionRoleArn
+  MyTaskExecutionRoleOutput:
+    Description: "The ARN of the task execution role"
+    Value: !GetAtt MyTaskExecutionRole.Arn
+    Export:
+      Name: MyTaskExecutionRoleExportName
+  MySecurityGroup:
+    Description: "Security group for Flask"
+    Value: !Ref MySecurityGroup
+    Export:
+      Name: MySecurityGroup
