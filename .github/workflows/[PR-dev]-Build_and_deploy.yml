@@ -2,40 +2,73 @@ name: Build & Deploy to Staging
 
 on:
   workflow_dispatch:
-  pull_request:
-    types: 
-      - closed
-    branches:
-      - 'dev'
 
 env:
   ARTIFACT_NAME: StudioGhibliMM-dev
   ARTIFACT_PATH: build-artifact
   AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+  AWS_ECS_CLUSTER_NAME: Mycluster
+  AWS_ECS_SERVICE_NAME: Myservice
   AWS_CF_NAME_MAIN: MyCloudFormationStack
   AWS_CF_TEMPLATE_MAIN: cloudformation/templates/main.yml
+  TASK_DEF_FILE: cloudformation/templates/Task_def.yml
+  DB_PASSWORD: ${{ secrets.AWS_SECRET_DB_PASSWORD_DEV }}
+  FlaskEnv: development2
 
 jobs:
   build:
-    if: github.event.pull_request.merged == true # Prevents pipeline from running if PR is abandoned, etc.
     runs-on: ubuntu-latest
     environment: Staging
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
-      # https://github.com/aws-actions/configure-aws-credentials
-      - name: Set Up AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4.1.0
+    steps:
+      - name: Set Environment Variables
+        run: |
+          echo "Setting environment variables for build job..."
+          echo "TASK_DEF_FILE=cloudformation/templates/Task_def.yml" >> $GITHUB_ENV
+          echo "DB_PASSWORD=${{ secrets.AWS_SECRET_DB_PASSWORD_DEV }}" >> $GITHUB_ENV
+  
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
-          aws-region: ${{ secrets.AWS_REGION }}
+          fetch-depth: 0
+
+      - name: Set Up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
-      # Check for CloudFormation Changes
+      - name: Check if CloudFormation Stack Exists
+        run: |
+          echo "Checking if CloudFormation stack exists..."
+      
+          STACK_EXISTS=$(aws cloudformation describe-stacks \
+            --stack-name ${{ env.AWS_CF_NAME_MAIN }} \
+            --query "Stacks[0].StackStatus" \
+            --output text || echo "STACK_NOT_FOUND")
+      
+          if [ "$STACK_EXISTS" = "STACK_NOT_FOUND" ]; then
+            echo "Stack does not exist. Creating CloudFormation stack..."
+            echo "CREATE_STACK=true" >> $GITHUB_ENV
+          else
+            echo "Stack exists. Proceeding with change set..."
+            echo "CREATE_STACK=false" >> $GITHUB_ENV
+          fi
+      
+      - name: Create CloudFormation Stack
+        if: ${{ env.CREATE_STACK == 'true' }}
+        run: |
+          aws cloudformation create-stack \
+            --stack-name ${{ env.AWS_CF_NAME_MAIN }} \
+            --template-body file://${{ env.AWS_CF_TEMPLATE_MAIN }} \
+            --capabilities CAPABILITY_NAMED_IAM \
+            --parameters ParameterKey=DBPassword,ParameterValue=${{ secrets.AWS_SECRET_DB_PASSWORD_DEV }}
+          echo "CloudFormation stack creation initiated."
+      
       - name: Check for CloudFormation Changes
+        if: ${{ env.CREATE_STACK == 'false' }}
         run: |
           echo "Checking for CloudFormation changes..."
           CHANGESET=$(aws cloudformation create-change-set \
@@ -44,23 +77,23 @@ jobs:
             --change-set-name TempChangeSet \
             --capabilities CAPABILITY_NAMED_IAM \
             --query "Id" --output text || echo "NO_CHANGES")
-
+          echo "ChangeSet Result: $CHANGESET"
           if [ "$CHANGESET" = "NO_CHANGES" ]; then
             echo "No changes detected. Skipping deployment."
             echo "SKIP_DEPLOY=true" >> $GITHUB_ENV
-            exit 0
           else
             echo "Changes detected. Proceeding with deployment."
+            echo "SKIP_DEPLOY=false" >> $GITHUB_ENV
           fi
-
-      # Deploy CloudFormation Stack
-      - name: Deploy CloudFormation Main
-        if: ${{ env.SKIP_DEPLOY }} == 'false'
+      
+      - name: Deploy CloudFormation Changes
+        if: ${{ env.SKIP_DEPLOY != 'true' }}
         uses: aws-actions/aws-cloudformation-github-deploy@v1.2.0
-        with: 
+        with:
           name: ${{ env.AWS_CF_NAME_MAIN }}
           template: ${{ env.AWS_CF_TEMPLATE_MAIN }}
           capabilities: CAPABILITY_NAMED_IAM
+          parameter-overrides: DBPassword=${{ secrets.AWS_SECRET_DB_PASSWORD_DEV }}
 
   build-and-push-ecr:
     name: Build and Push Docker Image to ECR
@@ -89,55 +122,229 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build --platform=linux/amd64 -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest .
+          docker build \
+            --platform=linux/amd64 \
+            --build-arg FLASK_ENV=${{ env.FlaskEnv }} \
+            -t ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest .
+
+      - name: Debug FlaskEnv
+        run: |
+          echo "FlaskEnv is set to: ${{ env.FlaskEnv }}"
+
+
 
       - name: Push Docker Image to ECR
         run: |
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
-  deploy-task:
-    name: Deploy ECS Service
-    runs-on: ubuntu-latest
+
+  deploy-Task_def:
+    name: Deploy TasK Def Service
     needs: build-and-push-ecr
+    runs-on: ubuntu-latest
+
     steps:
-      - name: Set Up AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
+          fetch-depth: 0
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Set Up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ secrets.AWS_REGION }}
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          audience: sts.amazonaws.com
 
-      - name: Install_Python
-        run: | 
-          sudo apt update
-          sudo apt install python3
+      - name: Test AWS Connectivity
+        run: aws s3 ls
 
-      - name: convert_yaml_to_json
+      - name: Debug - List Directory Contents
+        run: ls -R cloudformation/templates/
+
+
+      - name: Validate Task_def.json File
         run: |
-          python -c "import yaml, json, sys; print(json.dumps(yaml.safe_load(open('Task_def.yml'))))" > Task_def.json
+          if [ ! -f cloudformation/templates/Task_def.json ]; then
+              echo "Error: cloudformation/templates/Task_def.json file not found!"
+              exit 1
+          fi
+          
+      - name: Test Write Permissions
+        run: |
+          echo "Testing write permissions..."
+          echo "Test content" >> test_file.txt
+
+          
+      - name: Fetch CloudFormation Export Values
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          echo "Fetching CloudFormation export values..."
+          
+          # Fetch export values from CloudFormation
+          MyTaskExecutionRoleExportName=$(aws cloudformation list-exports --query "Exports[?Name=='MyTaskExecutionRoleExportName'].Value" --output text)
+          TaskExecutionRoleArn=$(aws cloudformation list-exports --query "Exports[?Name=='TaskExecutionRoleArn'].Value" --output text)
+          ECRRepositoryURI=$(aws cloudformation list-exports --query "Exports[?Name=='ECRRepositoryURI'].Value" --output text)
+          RDSInstanceEndpoint=$(aws cloudformation list-exports --query "Exports[?Name=='RDSInstanceEndpoint'].Value" --output text)
+          TaskDefinitionArns=$(aws cloudformation list-exports --query "Exports[?Name=='taskDefinitionArns'].Value" --output text)
+        
+  
+          # Replace placeholders in JSON file using jq
+          jq \
+            --arg TaskExecutionRoleArn "${TaskExecutionRoleArn}" \
+            --arg MyTaskExecutionRoleExportName "${MyTaskExecutionRoleExportName}" \
+            --arg ECRRepositoryURI "${ECRRepositoryURI}" \
+            --arg AWS_REGION "${AWS_REGION}" \
+            --arg DB_PASSWORD "${DB_PASSWORD}" \
+            --arg FlaskEnv "${FlaskEnv}" \
+            --arg RDSInstanceEndpoint "${RDSInstanceEndpoint}" \
+            '.executionRoleArn = $TaskExecutionRoleArn |
+             .taskRoleArn = $MyTaskExecutionRoleExportName |
+             .containerDefinitions[0].image = $ECRRepositoryURI |
+             .containerDefinitions[0].logConfiguration.options["awslogs-region"] = $AWS_REGION |
+             .containerDefinitions[0].environment |= map(
+                if .name == "DB_PASSWORD" then .value = $DB_PASSWORD
+                elif .name == "FLASK_ENV" then .value = $FlaskEnv
+                elif .name == "DB_HOST" then .value = $RDSInstanceEndpoint
+                else .
+                end
+              )' \
+            cloudformation/templates/Task_def.json > cloudformation/templates/Task_def_updated.json
+
       
-      # Deploy Task Definition
-      - name: Deploy Task Definition
+          # Print updated JSON file to logs
+          echo "Updated Task_def.json:"
+          cat cloudformation/templates/Task_def_updated.json
+
+          aws sts get-caller-identity
+          
+          # Export values to GitHub environment file
+          echo "TaskExecutionRoleArn=${TaskExecutionRoleArn}" >> $GITHUB_ENV
+          echo "MyTaskExecutionRoleExportName=${MyTaskExecutionRoleExportName}" >> $GITHUB_ENV
+          echo "ECRRepositoryURI=${ECRRepositoryURI}" >> $GITHUB_ENV
+          echo "RDSInstanceEndpoint=${RDSInstanceEndpoint}" >> $GITHUB_ENV
+          echo "AWS_REGION=${AWS_REGION}" >> $GITHUB_ENV
+
+
+      - name: Fetch Latest Task Name
         run: |
+          echo "Fetching latest task name..."
+          TASK_NAME=$(aws ecs list-task-definitions --sort DESC --query "taskDefinitionArns[0]" --output text 2>/dev/null || echo "none")
+          if [ "$TASK_NAME" == "none" ]; then
+            echo "No task definitions found."
+          else
+            echo "Found task definition: $TASK_NAME"
+            echo "TASK_NAME=$TASK_NAME" >> $GITHUB_ENV
+          fi
+
+      - name: Describe Latest Task Def
+        if: ${{ env.TASK_NAME != 'none' }}
+        run: |
+          echo "Task Name: $TASK_NAME"
+          aws ecs describe-task-definition --task-definition $TASK_NAME > current_task_def.json
+
+      - name: Debug Task Definitions
+        run: |
+          echo "Listing all task definitions..."
+          aws ecs list-task-definitions --sort DESC --query "taskDefinitionArns" --output text
+
+          
+      - name: Check Task Definition Changes
+        if: ${{ env.TASK_NAME != 'none' }}
+        run: |
+          echo "Comparing current and updated task definitions..."
+          if diff <(jq -S . current_task_def.json) <(jq -S . cloudformation/templates/Task_def_updated.json) > /dev/null; then
+            echo "No changes detected in task definition."
+            echo "UPDATE_TASK_DEF=false" >> $GITHUB_ENV
+          else
+            echo "Changes detected in task definition."
+            echo "UPDATE_TASK_DEF=true" >> $GITHUB_ENV
+          fi
+
+      - name: Register ECS Task Definition
+        if: ${{ env.TASK_NAME == 'none' }}
+        run: |
+          echo "Registering new task definition..."
           aws ecs register-task-definition \
-            --cli-input-json file://Task_def.json
+            --cli-input-json file://cloudformation/templates/Task_def_updated.json
 
-      # Update ECS Service
-      - name: Update ECS Service
-        if: ${{ env.SKIP_DEPLOY }} == 'false'
+
+  deploy-ecs-service:
+    name: Deploy ECS Service
+    needs: deploy-Task_def
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Checkout repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      # Step 2: Fetch CloudFormation Export Values
+      - name: Fetch CloudFormation Export Values
         run: |
-          echo "Registering new Task Definition revision..."
-          TASK_DEFINITION_ARN=$(aws ecs register-task-definition \
-            --cli-input-json file://Task_def.json \
-            --query "taskDefinition.taskDefinitionArn" --output text)
+          echo "Fetching CloudFormation export values..."
 
-          echo "Updating ECS Service to use new Task Definition..."
-          aws ecs update-service \
-            --cluster MyClusterName \
-            --service MyServiceName \
-            --task-definition $TASK_DEFINITION_ARN \
-            --force-new-deployment
+          MySecurityGroup=$(aws cloudformation list-exports --query "Exports[?Name=='MySecurityGroup'].Value" --output text)
+          PublicSubnetId=$(aws cloudformation list-exports --query "Exports[?Name=='PublicSubnetId'].Value" --output text)
+          MyECSClusterName=$(aws cloudformation list-exports --query "Exports[?Name=='MyECSClusterName'].Value" --output text)
+          LATEST_TASK_DEFINITION=$(aws ecs list-task-definitions --query "taskDefinitionArns[-1]" --output text)
+          echo "Latest Task Definition ARN: $LATEST_TASK_DEFINITION"
+     
+          echo "Exported CloudFormation Values:"
+          echo "MySecurityGroup=$MySecurityGroup"
+          echo "PublicSubnetId=$PublicSubnetId"
+          echo "MyECSClusterName=$MyECSClusterName"
+ 
 
+          # Export variables for subsequent steps
+          echo "MySecurityGroup=${MySecurityGroup}" >> $GITHUB_ENV
+          echo "PublicSubnetId=${PublicSubnetId}" >> $GITHUB_ENV
+          echo "MyECSClusterName=${MyECSClusterName}" >> $GITHUB_ENV
+          echo "LATEST_TASK_DEFINITION=${LATEST_TASK_DEFINITION}" >> $GITHUB_ENV
+
+      # Step 3: Deploy or Update ECS Service
+      - name: Create or Update ECS Service
+        run: |
+          echo "Checking if ECS Service exists..."
+      
+          SERVICE_EXISTS=$(aws ecs describe-services \
+            --cluster $MyECSClusterName \
+            --services FlaskAppService \
+            --query "services[?serviceName=='FlaskAppService'].serviceName" \
+            --output text)
+      
+          if [ -n "$SERVICE_EXISTS" ]; then
+            echo "Service exists. Updating ECS Service..."
+      
+            aws ecs update-service \
+              --cluster $MyECSClusterName \
+              --service FlaskAppService \
+              --task-definition $LATEST_TASK_DEFINITION
+      
+          else
+            echo "Service does not exist. Creating ECS Service..."
+      
+            aws ecs create-service \
+              --cluster $MyECSClusterName \
+              --service-name FlaskAppService \
+              --task-definition $LATEST_TASK_DEFINITION \
+              --desired-count 2 \
+              --launch-type FARGATE \
+              --network-configuration "awsvpcConfiguration={subnets=[$PublicSubnetId],securityGroups=[$MySecurityGroup],assignPublicIp='ENABLED'}"
+          fi
     
 
     
