@@ -138,6 +138,48 @@ jobs:
           docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/my-repo:latest
 
 
+
+
+
+  debug-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up AWS CLI
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Validate Environment Variables
+        run: |
+          echo "AWS_REGION: $AWS_REGION"
+          echo "AWS_ACCESS_KEY_ID: ***"
+          echo "AWS_SECRET_ACCESS_KEY: ***"
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Test AWS Connectivity
+        run: |
+          aws sts get-caller-identity
+          aws s3 ls
+
+      - name: Debug CloudFormation Exports
+        run: |
+          aws cloudformation list-exports --debug --region $AWS_REGION
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      - name: Test AWS Connectivity
+        run: aws s3 ls
+
+      - name: Debug - List Directory Contents
+        run: ls -R cloudformation/templates/
+
+
   deploy-Task_def:
     name: Deploy TasK Def Service
     needs: build-and-push-ecr
@@ -159,12 +201,6 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           audience: sts.amazonaws.com
-
-      - name: Test AWS Connectivity
-        run: aws s3 ls
-
-      - name: Debug - List Directory Contents
-        run: ls -R cloudformation/templates/
 
 
       - name: Validate Task_def.json File
